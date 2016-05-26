@@ -14,13 +14,13 @@ inherit obmc-phosphor-system-mgmt
 
 DEPENDS += "glib-2.0 systemd"
 RDEPENDS_${PN} += "python-subprocess python-compression libsystemd"
-SRC_URI += "git://github.com/openbmc/skeleton"
+SRC_URI += "git://github.com/SteveLinCH/skeleton"
 
 # RDEPEND on pflash if the openpower-pflash machine feature is set.
 PACKAGECONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'openpower-pflash', 'openpower-pflash', '', d)}"
 PACKAGECONFIG[openpower-pflash] = ",,,pflash"
 
-SRCREV = "2f9ee83356fba3f6f843bf2584f3e7e95763ec98"
+SRCREV = "a70667489fecdcae3080db757833c2bb2159cc8c"
 
 S = "${WORKDIR}"
 
