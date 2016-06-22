@@ -6,7 +6,6 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 
 inherit allarch
-inherit obmc-phosphor-systemd
 inherit setuptools
 
 RDEPENDS_${PN} += " \
@@ -18,6 +17,6 @@ RDEPENDS_${PN} += " \
 
 SRC_URI += "git://github.com/openbmc/openpower-inventory-upload"
 
-SRCREV = "867e058dd246739ab9c93df64e82b7526f42d67f"
+SRCREV = "b07de872ac18710dbf0d393a206e2598c6580f46"
 
 S = "${WORKDIR}/git"
