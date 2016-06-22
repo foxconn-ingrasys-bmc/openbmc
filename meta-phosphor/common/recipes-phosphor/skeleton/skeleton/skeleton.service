@@ -4,6 +4,7 @@ Description=Temp placeholder for skeleton function
 [Service]
 Restart=always
 ExecStart=/usr/sbin/system_manager.py
+ExecStopPost=/bin/sh -c "/usr/bin/find /sys/class/hwmon -follow -maxdepth 2 -type f -name 'pwm?' | xargs -i /bin/sh -c '/bin/echo 255 > {}'"
 
 [Install]
 WantedBy=multi-user.target
