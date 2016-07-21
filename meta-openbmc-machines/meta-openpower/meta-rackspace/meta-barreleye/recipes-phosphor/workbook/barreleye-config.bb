@@ -1,8 +1,8 @@
 SUMMARY = "Barreleye board wiring"
 DESCRIPTION = "Board wiring information for the Barreleye system."
-HOMEPAGE = "http://github.com/SteveLinCH/skeleton;branch=release"
+HOMEPAGE = "http://github.com/SteveLinCH/skeleton"
 PR = "r1"
 
-SRCREV = "1bbc820f2b595b7a674e52bee1775c877b35b61e"
+SRCREV = "v10.30.100"
 inherit config-in-skeleton
 inherit obmc-phosphor-license
