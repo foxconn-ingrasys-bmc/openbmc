@@ -3,6 +3,6 @@ DESCRIPTION = "Board wiring information for the Barreleye system."
 HOMEPAGE = "http://github.com/SteveLinCH/skeleton;branch=release"
 PR = "r1"
 
-SRCREV = "v10.10.2560"
+SRCREV = "1bbc820f2b595b7a674e52bee1775c877b35b61e"
 inherit config-in-skeleton
 inherit obmc-phosphor-license
