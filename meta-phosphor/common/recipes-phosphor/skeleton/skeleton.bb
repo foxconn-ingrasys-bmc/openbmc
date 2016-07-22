@@ -18,7 +18,7 @@ VIRTUAL-RUNTIME_skeleton_workbook ?= ""
 
 DEPENDS += "glib-2.0 systemd python"
 RDEPENDS_${PN} += "python-json python-subprocess python-compression libsystemd ${VIRTUAL-RUNTIME_skeleton_workbook}"
-SRC_URI += "git://github.com/SteveLinCH/skeleton"
+SRC_URI += "git://github.com/ken1029/skeleton"
 
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/*"
 
@@ -26,7 +26,7 @@ FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/*"
 PACKAGECONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'openpower-pflash', 'openpower-pflash', '', d)}"
 PACKAGECONFIG[openpower-pflash] = ",,,pflash"
 
-SRCREV = "v10.30.100"
+SRCREV = "v10.30.256"
 
 S = "${WORKDIR}"
 
