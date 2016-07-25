@@ -8,9 +8,9 @@ inherit obmc-phosphor-systemd
 
 RDEPENDS_${PN} += "python-dbus python-pygobject"
 
-SRC_URI += "git://github.com/openbmc/phosphor-settingsd"
+SRC_URI += "git://github.com/ken1029/phosphor-settingsd"
 
-SRCREV = "df9b8ad2d53df7893ff0a49708ef05c3289653d4"
+SRCREV = "b96543d35c01983f07b2d6b60e205ed1fc03109e"
 
 S = "${WORKDIR}/git"
 
