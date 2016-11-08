@@ -1,5 +1,5 @@
 KBRANCH ?= "dev-4.4"
 LINUX_VERSION ?= "4.4"
-SRCREV="openbmc-4.4-20161021-1"
+SRCREV="v10.52.512"
 
 require linux-obmc.inc
