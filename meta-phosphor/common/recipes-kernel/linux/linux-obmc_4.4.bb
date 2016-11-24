@@ -1,6 +1,5 @@
-KBRANCH ?= "barreleye-4.4-v10.52.512"
+KBRANCH ?= "dev-4.4"
 LINUX_VERSION ?= "4.4"
-SRCREV="v10.52.512"
+SRCREV="v00.30.2560"
 
->>>>>>> v10.51.2560-RAX
 require linux-obmc.inc
