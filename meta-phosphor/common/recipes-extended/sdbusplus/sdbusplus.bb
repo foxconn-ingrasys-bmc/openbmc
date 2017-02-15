@@ -9,14 +9,29 @@ inherit autotools pkgconfig
 inherit obmc-phosphor-python-autotools
 
 DEPENDS += "autoconf-archive-native"
-RDEPENDS_${PN} += " \
+RDEPENDS_sdbus++ += " \
         python-inflection \
         python-mako \
         python-pyyaml \
         "
 
+# sdbus++ has a handful of runtime dependencies on other python packages.
+# Bitbake doesn't do anything with RDEPENDS in native context because
+# native context doesn't have packages.
+#
+# While technically sdbus++ doesn't require its runtime dependencies to be
+# installed to build, work around the above native context behavior
+# by adding a build dependency so that clients don't have to DEPEND
+# on sdbus++ runtime dependencies manually.
+
+DEPENDS_append_class-native = " \
+        python-inflection-native \
+        python-mako-native \
+        python-pyyaml-native \
+        "
+
 SRC_URI += "git://github.com/openbmc/sdbusplus"
-SRCREV = "7904ed64341334649a5c613f7007a449d6899508"
+SRCREV = "a1fb5e6c3951eb8ad00795ba9471d968e53faad2"
 
 PACKAGECONFIG ??= "libsdbusplus"
 PACKAGECONFIG[libsdbusplus] = "--enable-libsdbusplus,--disable-libsdbusplus,systemd,libsystemd"
@@ -30,6 +45,5 @@ PYTHON_AUTOTOOLS_PACKAGE = "sdbus++"
 
 PACKAGECONFIG_remove_class-native = "libsdbusplus"
 PACKAGECONFIG_remove_class-nativesdk = "libsdbusplus"
-ALLOW_EMPTY_${PN} = "1"
 
 BBCLASSEXTEND += "native nativesdk"

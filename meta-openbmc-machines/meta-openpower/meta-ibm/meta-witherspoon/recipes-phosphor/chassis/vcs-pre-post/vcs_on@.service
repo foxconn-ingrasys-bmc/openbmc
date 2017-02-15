@@ -1,8 +1,10 @@
 [Unit]
 Description=Turn VCS on
-Wants=vcs_workaround@.service
-After=vcs_workaround@.service
-Conflicts=obmc-chassis-stop@%i.target
+Wants=vcs_workaround@%i.service
+After=vcs_workaround@%i.service
+Wants=obmc-host-start-pre@%i.target
+Before=obmc-host-start-pre@%i.target
+Conflicts=obmc-power-chassis-off@%i.target
 
 [Service]
 ExecStart={bindir}/vcs_on.sh
@@ -10,4 +12,4 @@ Type=oneshot
 RemainAfterExit=yes
 
 [Install]
-WantedBy=obmc-chassis-start@%i.target
+WantedBy=obmc-power-chassis-on@%i.target

@@ -41,11 +41,10 @@ RDEPENDS_${PN}-chassis = " \
         obmc-op-control-power \
         obmc-pcie-detect \
         obmc-watchdog \
-        obmc-op-control-host \
         obmc-control-led \
         "
 
-SUMMARY_${PN}-sensors = "OpenPOWER Fans"
+SUMMARY_${PN}-fans = "OpenPOWER Fans"
 RDEPENDS_${PN}-fans = " \
         obmc-hwmon \
         obmc-control-fan \
