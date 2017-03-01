@@ -1,2 +1,2 @@
-SRCREV ?= "7812b6d7ca6b885d1ff2b7d156e1021d0e14e0f1"
-SKELETON_URI ?= "git://github.com/openbmc/skeleton"
+SRCREV ?= "5e9ea5ba488f8314b9d160a1bdcb8e30c6c12c41"
+SKELETON_URI ?= "git://github.com/foxconn-bmc-ks/skeleton;branch=foxconn-g2"
