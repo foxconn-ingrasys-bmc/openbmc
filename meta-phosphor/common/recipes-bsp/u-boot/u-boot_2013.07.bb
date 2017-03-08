@@ -15,8 +15,8 @@ SRCREV = "04199d5a91991723b5125cef5e1b85aaffdf81c2"
 
 PV = "v2013.07+git${SRCPV}"
 
-UBRANCH = "v2013.07-aspeed-openbmc"
-SRC_URI = "git://git@github.com/ken1029/u-boot.git;branch=${UBRANCH};protocol=https"
+UBRANCH = "foxconn-v2013.07-aspeed-openbmc"
+SRC_URI = "git://git@github.com/foxconn-bmc-ks/u-boot.git;branch=${UBRANCH};protocol=https"
 
 S = "${WORKDIR}/git"
 

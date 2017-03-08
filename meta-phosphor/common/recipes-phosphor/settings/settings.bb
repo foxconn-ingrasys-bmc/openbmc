@@ -8,7 +8,8 @@ inherit obmc-phosphor-systemd
 
 RDEPENDS_${PN} += "python-dbus python-pygobject"
 
-SRC_URI += "git://github.com/ken1029/phosphor-settingsd"
+FOXCONN_BRANCH = "foxconn-sthelens"
+SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-settingsd;branch=${FOXCONN_BRANCH}"
 
 SRCREV = "b96543d35c01983f07b2d6b60e205ed1fc03109e"
 
