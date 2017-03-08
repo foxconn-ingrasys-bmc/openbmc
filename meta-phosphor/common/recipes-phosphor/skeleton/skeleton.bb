@@ -18,8 +18,8 @@ VIRTUAL-RUNTIME_skeleton_workbook ?= ""
 
 DEPENDS += "glib-2.0 i2c-tools systemd python"
 RDEPENDS_${PN} += "python-argparse python-json python-subprocess python-compression libsystemd ${VIRTUAL-RUNTIME_skeleton_workbook}"
-SKELETON_BRANCH = "foxconn-openbmc-v1.0-stable"
-SRC_URI += "git://github.com/foxconn-bmc-ks/skeleton;branch=${SKELETON_BRANCH}"
+FOXCONN_BRANCH = "foxconn-openbmc-v1.0-stable"
+SRC_URI += "git://github.com/foxconn-bmc-ks/skeleton;branch=${FOXCONN_BRANCH}"
 
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/*"
 
