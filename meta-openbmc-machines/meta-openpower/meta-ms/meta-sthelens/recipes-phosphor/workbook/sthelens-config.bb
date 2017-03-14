@@ -3,6 +3,6 @@ DESCRIPTION = "Board wiring information for the StHelens system."
 HOMEPAGE = "https://github.com/foxconn-bmc-ks/skeleton"
 PR = "r1"
 
-SRCREV = "267b9d2c4c9c74e31a18eeaa96fe6b13e9884f5f"
+SRCREV = "e2e709c8794bdb18628df5f0e65a5a475a7ebd2d"
 inherit config-in-skeleton
 inherit obmc-phosphor-license
