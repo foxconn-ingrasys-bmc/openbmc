@@ -16,6 +16,8 @@ RDEPENDS_${PN} += " \
         obmc-mapper \
         python-rocket \
         python-bottle \
+        python-greenlet \
+        python-gevent \
         python-spwd \
         python-netserver \
         pyphosphor \

@@ -536,6 +536,7 @@ class PythonRecipeHandler(RecipeHandler):
         pkgdata_dir = tinfoil.config_data.getVar('PKGDATA_DIR', True)
 
         ldata = tinfoil.config_data.createCopy()
+        bb.parse.handle('classes/pypi.bbclass', ldata, True)
         bb.parse.handle('classes/python-dir.bbclass', ldata, True)
         python_sitedir = ldata.getVar('PYTHON_SITEPACKAGES_DIR', True)
 
