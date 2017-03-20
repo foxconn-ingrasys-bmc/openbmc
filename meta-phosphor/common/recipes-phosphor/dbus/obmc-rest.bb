@@ -19,6 +19,7 @@ RDEPENDS_${PN} += " \
         python-greenlet \
         python-gevent \
         python-netaddr \
+        python-ctypes \
         python-spwd \
         python-netserver \
         pyphosphor \

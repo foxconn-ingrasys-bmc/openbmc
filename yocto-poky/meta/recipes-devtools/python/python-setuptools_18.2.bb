@@ -32,6 +32,7 @@ RDEPENDS_${PN} = "\
   python-shell \
   python-distutils \
   python-compression \
+  python-ctypes \
 "
 
 RDEPENDS_${PN}_class-native = "\
