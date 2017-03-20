@@ -18,6 +18,7 @@ RDEPENDS_${PN} += " \
         python-bottle \
         python-greenlet \
         python-gevent \
+        python-netaddr \
         python-spwd \
         python-netserver \
         pyphosphor \
