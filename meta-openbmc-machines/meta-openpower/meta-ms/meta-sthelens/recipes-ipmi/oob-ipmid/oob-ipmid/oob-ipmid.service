@@ -1,0 +1,9 @@
+[Unit]
+Description=Out-Of-Band IPMI Daemon
+
+[Service]
+ExecStart=/usr/bin/oob-ipmid
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
