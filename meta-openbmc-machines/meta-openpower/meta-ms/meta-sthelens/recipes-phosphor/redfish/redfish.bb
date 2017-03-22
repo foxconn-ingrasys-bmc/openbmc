@@ -15,13 +15,13 @@ BB_NO_NETWORK = "0"
 
 #### HTTP download waitting for GCM4ML ready #### 
 # SRC_URI = "git://csibmc.visualstudio.com/J2010/_git/redfish;protocol=https"
-SRC_URI = "git://github.com/ken1029/bluefish;protocol=https"
+SRC_URI = "git://github.com/doylehuang/bluefish;protocol=https"
 
 
 ### SSH download ###
 #SRC_URI = "git://csibmc@csibmc.visualstudio.com:22/J2010/_git/redfish;protocol=ssh"
 
-SRCREV="${AUTOREV}"
+SRCREV="0c55b3b1e85e51650252bf4a07cd3eb0e64cf036"
 
 
 FILESEXTRAPATHS_append := "${THISDIR}/redfish:"
