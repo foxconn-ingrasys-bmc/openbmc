@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 # Read and control VCS rails by sending the UCD power sequencer I2C commands.
 # This script assumes that the UCD is controlling VCS rails as GPIOs 5 and 6.
 # Also assumes that those GPIOs are already enabled.
@@ -8,6 +8,7 @@ ucd_addr="0x64"
 ucd_path="/sys/bus/i2c/drivers/ucd9000"
 ucd_driver="${ucd_bus}-00${ucd_addr#0x}"
 ucd_retries="5"
+ucd=`ls -1 $ucd_path | grep $ucd_driver`
 
 retry()
 {
@@ -59,7 +60,7 @@ rebind_ucd()
 
 vcs_set_gpios()
 {
-    unbind_ucd
+    if [ -n "$ucd" ]; then unbind_ucd; fi
     echo -e "\tSetting UCD GPIO 5 to $1"
     ucd_set 0xFA 5
     ucd_set 0xFB $1
@@ -68,13 +69,13 @@ vcs_set_gpios()
     ucd_set 0xFA 6
     ucd_set 0xFB $1
     ucd_set 0xFB $1
-    rebind_ucd
+    if [ -n "$ucd" ]; then rebind_ucd; fi
 }
 
 vcs_get()
 {
     echo Reading VCS settings
-    unbind_ucd
+    if [ -n "$ucd" ]; then unbind_ucd; fi
     ucd_set 0xFA 5
     ucd_get 0xFB
     local val=`echo $ucd_reg | grep -i -c 0x0f`
@@ -83,7 +84,7 @@ vcs_get()
     ucd_get 0xFB
     local val=`echo $ucd_reg | grep -i -c 0x0f`
     echo -e "\tUCD GPIO 6 state=$val"
-    rebind_ucd
+    if [ -n "$ucd" ]; then rebind_ucd; fi
 }
 
 
