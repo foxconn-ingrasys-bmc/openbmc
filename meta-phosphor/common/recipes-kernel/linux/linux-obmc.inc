@@ -8,7 +8,7 @@ KSRC ?= "git://github.com/foxconn-bmc-ks/linux;protocol=git;branch=${KBRANCH}"
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
 SRC_URI = "${KSRC}"
-#SRC_URI += "file://v3-0001-drivers-fsi-Increase-delay-before-sampling-input-.patch"
+SRC_URI += "file://v3-0001-drivers-fsi-Increase-delay-before-sampling-input-.patch"
 
 LINUX_VERSION_EXTENSION ?= "-${SRCREV}"
 
