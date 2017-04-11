@@ -7,19 +7,28 @@ PR = "r1"
 inherit autotools \
         pkgconfig \
         pythonnative \
+        phosphor-dbus-interfaces \
+        phosphor-inventory-manager \
         obmc-phosphor-dbus-service
 
 require phosphor-inventory-manager.inc
 
 DEPENDS += " \
         ${PN}-config-native \
+        phosphor-dbus-interfaces \
+        phosphor-dbus-interfaces-native \
+        phosphor-logging \
         sdbusplus \
         sdbusplus-native \
         autoconf-archive-native \
         "
-RDEPENDS_${PN} += "sdbusplus"
+RDEPENDS_${PN} += " \
+        sdbusplus \
+        phosphor-dbus-interfaces \
+        phosphor-logging \
+        "
 
-OBMC_INVENTORY_PATH="${OBMC_DBUS_PATH_ROOT}/Inventory"
+OBMC_INVENTORY_PATH="${OBMC_DBUS_PATH_ROOT}/inventory"
 OBMC_INVENTORY_MGR_IFACE="${OBMC_DBUS_IFACE_ROOT}.Inventory.Manager"
 
 DBUS_SERVICE_${PN} = "${OBMC_INVENTORY_MGR_IFACE}.service"
@@ -27,8 +36,9 @@ DBUS_SERVICE_${PN} = "${OBMC_INVENTORY_MGR_IFACE}.service"
 S = "${WORKDIR}/git"
 
 EXTRA_OECONF = " \
-        YAML_PATH=${STAGING_DATADIR_NATIVE}/${PN} \
+        YAML_PATH=${STAGING_DIR_NATIVE}${base_datadir} \
         BUSNAME=${OBMC_INVENTORY_MGR_IFACE} \
         INVENTORY_ROOT=${OBMC_INVENTORY_PATH} \
         IFACE=${OBMC_INVENTORY_MGR_IFACE} \
+        IFACES_PATH=${STAGING_DIR_NATIVE}${yaml_dir} \
         "

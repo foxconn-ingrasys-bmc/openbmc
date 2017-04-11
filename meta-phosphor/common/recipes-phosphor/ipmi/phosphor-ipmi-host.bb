@@ -9,18 +9,39 @@ inherit autotools pkgconfig
 inherit obmc-phosphor-license
 inherit obmc-phosphor-sdbus-service
 inherit obmc-phosphor-ipmiprovider-symlink
+inherit phosphor-ipmi-host
+inherit pythonnative
 
+DEPENDS += "phosphor-logging"
 DEPENDS += "phosphor-mapper"
 DEPENDS += "autoconf-archive-native"
+DEPENDS += "packagegroup-obmc-ipmid-providers"
+DEPENDS += "virtual/phosphor-ipmi-sensor-inventory"
+DEPENDS += "sdbusplus"
+DEPENDS += "phosphor-dbus-interfaces"
+
+RDEPENDS_${PN}-dev += "phosphor-logging"
 RDEPENDS_${PN}-dev += "phosphor-mapper-dev"
 RDEPENDS_${PN} += "clear-once"
 RDEPENDS_${PN} += "network"
 RDEPENDS_${PN} += "libmapper"
 RDEPENDS_${PN} += "phosphor-time-manager"
+RDEPENDS_${PN} += "sdbusplus phosphor-dbus-interfaces"
+
 RRECOMMENDS_${PN} += "virtual-obmc-settings-mgmt"
 SRC_URI += "git://github.com/openbmc/phosphor-host-ipmid"
 
-SRCREV = "8485aa119e8809c7da059a6ff137aefe6c4680fb"
+SRCREV = "6dc96680f1e9db0d1c87ab26865a27ac80cefd3d"
+
+# Setup IPMI Whitelist Conf files
+WHITELIST_CONF = " \
+        ${STAGING_DATADIR_NATIVE}/phosphor-ipmi-host/*.conf \
+        ${S}/host-ipmid-whitelist.conf \
+        "
+EXTRA_OECONF = " \
+        WHITELIST_CONF="${WHITELIST_CONF}" \
+        SENSOR_YAML_GEN=${STAGING_DIR_NATIVE}${sensor_datadir}/sensor.yaml \
+        "
 
 S = "${WORKDIR}/git"
 

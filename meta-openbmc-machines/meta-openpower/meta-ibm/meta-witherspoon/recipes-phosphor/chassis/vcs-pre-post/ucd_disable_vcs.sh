@@ -5,12 +5,18 @@
 # 10/28/16 PGR -
 # 11/10/16 PGR - unbind/bind UCD driver
 
+ucd_retries=5
+ucd=
+
 # unbind ucd driver to permit i2cset
 ucdpath="/sys/bus/i2c/drivers/ucd9000"
 if [ -e $ucdpath ]
 then
-  ucd=`ls $ucdpath | grep 64`
-  echo $ucd > $ucdpath/unbind
+  ucd=`ls -1 $ucdpath | grep 64`
+  if [ -n "$ucd" ]
+  then
+    echo $ucd > $ucdpath/unbind
+  fi
 fi
 
 # Setup UCD module (in standby) to disable VCS rails from power-on:
@@ -26,8 +32,17 @@ i2cset -y 11 0x64 0x02 0x1A i
 i2cset -y 11 0x64 0x00 0x0F i
 i2cset -y 11 0x64 0x02 0x1A i
 
-# re-bind ucd driver
-if [ -e $ucdpath ]
-then
-  echo $ucd > $ucdpath/bind
+# re-bind ucd driver only if we unbound it (i.e. ucd has been set with a value)
+if [ -e $ucdpath -a -n "$ucd" ]; then
+  j=0
+  until [ $j -ge $ucd_retries ] || [ -e $ucdpath/$ucd ]; do
+    j=$((j+1))
+    echo $ucd > $ucdpath/bind || ret=$?
+        if [ $j -gt 1 ]; then
+          echo "rebinding UCD driver. Retry number $j"
+          sleep 1
+    fi
+  done
+  if [ ! -e $ucdpath/$ucd ]; then exit $ret; fi
 fi
+

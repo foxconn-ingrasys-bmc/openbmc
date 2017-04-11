@@ -1,0 +1,18 @@
+[Unit]
+Description=Run VCS workaround on host%i
+Wants=obmc-host-start-pre@%i.target
+Before=obmc-host-start-pre@%i.target
+Wants=obmc-power-on@%i.target
+After=obmc-power-on@%i.target
+Wants=fsi-scan@%i.service
+After=fsi-scan@%i.service
+Conflicts=obmc-power-chassis-off@%i.target
+ConditionPathExists=!/run/openbmc/chassis@%i-on
+
+[Service]
+ExecStart={sbindir}/openpower-proc-control vcsWorkaround
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=obmc-power-chassis-on@%i.target

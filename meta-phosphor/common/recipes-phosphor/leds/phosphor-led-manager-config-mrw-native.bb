@@ -5,12 +5,13 @@ inherit native
 inherit obmc-phosphor-utils
 inherit obmc-phosphor-license
 
+PROVIDES += "virtual/phosphor-led-manager-config-native"
 DEPENDS += "mrw-native mrw-perl-tools-native"
 
 # Generate a YAML files based on MRW input
 do_install_append() {
     USE_MRW="${@cf_enabled(d, 'obmc-mrw', 'yes')}"
-    DEST=${STAGING_DATADIR_NATIVE}/phosphor-led-manager
+    DEST=${D}${datadir}/phosphor-led-manager
 
     if [ "${USE_MRW}" = "yes" ]; then
         install -d ${DEST}/
