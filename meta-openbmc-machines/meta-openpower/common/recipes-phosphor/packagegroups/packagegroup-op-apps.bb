@@ -40,6 +40,7 @@ SUMMARY_${PN}-fans = "OpenPOWER Fans"
 RDEPENDS_${PN}-fans = " \
         obmc-hwmon \
         obmc-control-fan \
+        obmc-control-fan-algorithm \
         "
 
 SUMMARY_${PN}-flash = "OpenPOWER Flash"
