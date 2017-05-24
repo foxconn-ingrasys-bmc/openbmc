@@ -45,7 +45,7 @@ DBUS_SERVICE_${PN}-chassis += "xyz.openbmc_project.State.Chassis.service"
 FILES_${PN}-bmc = "${sbindir}/phosphor-bmc-state-manager"
 DBUS_SERVICE_${PN}-bmc += "xyz.openbmc_project.State.BMC.service"
 
-SRC_URI += "git://github.com/openbmc/phosphor-state-manager"
-SRCREV = "f318d877f5ed7ce11bf53d7ee2828d558285317c"
+SRC_URI += "git://github.com/doylehuang/phosphor-state-manager;branch=wip/foxconn-g2"
+SRCREV = "33d289a0efd00b028ca4cf274b3e81ad42713091"
 
 S = "${WORKDIR}/git"

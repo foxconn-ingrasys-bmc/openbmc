@@ -15,8 +15,8 @@ RDEPENDS_${PN} += "python-dbus python-pygobject"
 PROVIDES += "virtual/obmc-settings-mgmt"
 RPROVIDES_${PN} += "virtual-obmc-settings-mgmt"
 
-SRC_URI += "git://github.com/openbmc/phosphor-settingsd"
+SRC_URI += "git://github.com/doylehuang/phosphor-settingsd;branch=wip/foxconn-g2"
 
-SRCREV = "3b8d055ca761a68c74dad01a306f238674d71878"
+SRCREV = "c9cfb8d9184706e1cd3df9d3bdd06108f8c16bc5"
 
 S = "${WORKDIR}/git"
