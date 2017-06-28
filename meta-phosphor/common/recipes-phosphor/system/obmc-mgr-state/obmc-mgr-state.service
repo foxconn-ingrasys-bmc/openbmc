@@ -8,7 +8,7 @@ After=mapper-wait@-org-openbmc-settings-host0.service
 [Service]
 Restart=no
 Type=oneshot
-ExecStart={sbindir}/discover_system_state.py
+ExecStart={sbindir}/discover_system_state.py --rand 10
 Environment="PYTHONUNBUFFERED=1"
 
 [Install]
