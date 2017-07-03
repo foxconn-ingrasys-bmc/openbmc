@@ -29,9 +29,10 @@ DEPENDS_append_class-native = " \
         python-mako-native \
         python-pyyaml-native \
         "
+FOXCONN_BRANCH ?= "foxconn-g2"
+SRC_URI += "git://github.com/foxconn-bmc-ks/sdbusplus;protocol=git;branch=${FOXCONN_BRANCH}"
 
-SRC_URI += "git://github.com/doylehuang/sdbusplus;branch=wip/foxconn-g2"
-SRCREV = "093ee36c881009c577aaa84f25261dff3cfa08a9"
+SRCREV = "fe82970ce2b50fe91a1bec2e1e1e36f735be2e9c"
 
 PACKAGECONFIG ??= "libsdbusplus transaction"
 PACKAGECONFIG[libsdbusplus] = "--enable-libsdbusplus,--disable-libsdbusplus,systemd,libsystemd"
