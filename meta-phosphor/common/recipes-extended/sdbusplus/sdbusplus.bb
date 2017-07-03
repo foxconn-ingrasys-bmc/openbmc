@@ -4,6 +4,7 @@ HOMEPAGE = "http://github.com/openbmc/sdbusplus"
 PR = "r1"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
+FOXCONN_BRANCH = "foxconn-g2"
 
 inherit autotools pkgconfig
 inherit obmc-phosphor-python-autotools
@@ -29,7 +30,6 @@ DEPENDS_append_class-native = " \
         python-mako-native \
         python-pyyaml-native \
         "
-FOXCONN_BRANCH ?= "foxconn-g2"
 SRC_URI += "git://github.com/foxconn-bmc-ks/sdbusplus;protocol=git;branch=${FOXCONN_BRANCH}"
 
 SRCREV = "fe82970ce2b50fe91a1bec2e1e1e36f735be2e9c"

@@ -6,6 +6,7 @@ HOMEPAGE = "https://github.com/openbmc/phosphor-state-manager"
 PR = "r1"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
+FOXCONN_BRANCH = "foxconn-g2"
 
 STATE_MGR_PACKAGES = " \
     ${PN}-host \
@@ -45,7 +46,6 @@ DBUS_SERVICE_${PN}-chassis += "xyz.openbmc_project.State.Chassis.service"
 FILES_${PN}-bmc = "${sbindir}/phosphor-bmc-state-manager"
 DBUS_SERVICE_${PN}-bmc += "xyz.openbmc_project.State.BMC.service"
 
-FOXCONN_BRANCH ?= "foxconn-g2"
 SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-state-manager;protocol=git;branch=${FOXCONN_BRANCH}"
 SRCREV = "d6478e63f5b8b92309be8caf0b7f5b7fa546a48f"
 
