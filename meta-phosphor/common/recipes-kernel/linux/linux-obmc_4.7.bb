@@ -1,6 +1,6 @@
 KBRANCH ?= "foxconn-dev-4.7"
 LINUX_VERSION ?= "4.7"
 
-SRCREV="65de39111444c22945ab6a81ed7d92bcc4e998a3"
+SRCREV="a5b310dee08c067a7ee91010c0b4f713de5b0b6d"
 
 require linux-obmc.inc
