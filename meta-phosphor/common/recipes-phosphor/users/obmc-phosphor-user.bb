@@ -6,6 +6,7 @@ PR = "r1"
 inherit allarch
 inherit obmc-phosphor-license
 inherit obmc-phosphor-dbus-service
+inherit phosphor-networkd-rev
 
 PROVIDES += "virtual/obmc-user-mgmt"
 RPROVIDES_${PN} += "virtual-obmc-user-mgmt"
@@ -15,10 +16,6 @@ RDEPENDS_${PN} += " \
         python-pygobject \
         python-subprocess \
         python-pexpect"
-
-SRC_URI += "git://github.com/openbmc/phosphor-networkd"
-
-SRCREV = "968d203ef934d68ded7e026d38dc77835116dedd"
 
 S = "${WORKDIR}/git"
 INSTALL_NAME = "userman.py"

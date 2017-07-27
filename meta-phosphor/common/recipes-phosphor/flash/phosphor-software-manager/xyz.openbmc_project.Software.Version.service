@@ -1,0 +1,12 @@
+[Unit]
+Description=Phosphor Version Software Manager
+
+[Service]
+ExecStartPre=/bin/sh -c 'mkdir -p /tmp/images'
+ExecStart={sbindir}/phosphor-version-software-manager
+Restart=always
+Type=dbus
+BusName={BUSNAME}
+
+[Install]
+WantedBy={SYSTEMD_DEFAULT_TARGET}

@@ -27,8 +27,9 @@ RRECOMMENDS_${PN} += "${VIRTUAL-RUNTIME_phosphor-hwmon-config}"
 
 SRC_URI += "git://github.com/openbmc/phosphor-hwmon"
 SRC_URI += "file://70-hwmon.rules"
+SRC_URI += "file://70-iio.rules"
 
-SRCREV = "4e1f30f1da6827945087857f3df7164a352ff5cf"
+SRCREV = "2f370c4e351adb90dc218d719b962cb841a399eb"
 
 S = "${WORKDIR}/git"
 
@@ -36,4 +37,5 @@ do_install_append() {
 
         install -d ${D}/${base_libdir}/udev/rules.d/
         install ${WORKDIR}/70-hwmon.rules ${D}/${base_libdir}/udev/rules.d/
+        install ${WORKDIR}/70-iio.rules ${D}/${base_libdir}/udev/rules.d/
 }

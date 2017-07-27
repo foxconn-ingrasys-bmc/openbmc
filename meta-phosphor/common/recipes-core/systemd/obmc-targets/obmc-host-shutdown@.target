@@ -1,0 +1,6 @@
+[Unit]
+Description=Power%i Host Off
+Wants={SYSTEMD_DEFAULT_TARGET}
+RefuseManualStop=yes
+OnFailure=obmc-host-stop@%i.target
+OnFailureJobMode=flush

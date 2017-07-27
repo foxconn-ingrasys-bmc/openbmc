@@ -27,14 +27,15 @@ RDEPENDS_${PN}-chassis = " \
         obmc-button-power \
         obmc-button-reset \
         obmc-control-chassis \
-        obmc-hostcheckstop \
         obmc-op-control-power \
         obmc-pcie-detect \
-        obmc-watchdog \
         obmc-host-failure-reboots \
         "
 #Pull in obmc-fsi on all P9 OpenPOWER systems
-RDEPENDS_${PN}-chassis += "${@mf_enabled(d, 'obmc-fsi', 'obmc-fsi')}"
+RDEPENDS_${PN}-chassis += "${@mf_enabled(d, 'op-fsi', 'op-fsi')}"
+
+#Pull in p9-cfam-override on all P9 OpenPOWER systems
+RDEPENDS_${PN}-chassis += "${@mf_enabled(d, 'p9-cfam-override', 'p9-cfam-override')}"
 
 SUMMARY_${PN}-fans = "OpenPOWER Fans"
 RDEPENDS_${PN}-fans = " \
@@ -50,10 +51,10 @@ RDEPENDS_${PN}-flash = " \
         obmc-mgr-download \
         obmc-op-flasher \
         obmc-control-bmc \
+        openpower-software-manager \
         "
 
 SUMMARY_${PN}-system = "OpenPOWER System"
 RDEPENDS_${PN}-system = " \
         obmc-mgr-system \
-        obmc-mgr-state \
         "

@@ -1,0 +1,8 @@
+[Unit]
+Description=Enable FSI
+Conflicts=fsi-disable.service
+
+[Service]
+ExecStart=/bin/sh -c "echo 0 > /sys/devices/platform/gpio-fsi/external_mode"
+Type=oneshot
+RemainAfterExit=yes

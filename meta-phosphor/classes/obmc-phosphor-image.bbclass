@@ -5,12 +5,13 @@
 # - obmc-bmc-state-mgmt               - OpenBMC BMC state management
 # - obmc-chassis-mgmt                 - OpenBMC chassis management
 # - obmc-chassis-state-mgmt           - OpenBMC chassis state management
-# - obmc-event-mgmt                   - OpenBMC event management
-# - obmc-fan-mgmt                     - OpenBMC fan management
+# - obmc-fan-control                  - OpenBMC fan management
+# - obmc-fan-mgmt                     - Deprecated - use obmc-fan-control instead
 # - obmc-flash-mgmt                   - OpenBMC flash management
 # - obmc-host-ctl                     - OpenBMC host control
 # - obmc-host-ipmi                    - OpenBMC host IPMI
 # - obmc-host-state-mgmt              - OpenBMC host state management
+# - obmc-host-check-mgmt              - OpenBMC host state checking
 # - obmc-inventory                    - OpenBMC inventory support
 # - obmc-leds                         - OpenBMC LED support
 # - obmc-logging-mgmt                 - OpenBMC logging management
@@ -19,20 +20,26 @@
 # - obmc-software                     - OpenBMC software management
 # - obmc-system-mgmt                  - OpenBMC system management
 # - obmc-user-mgmt                    - OpenBMC user management
+# - obmc-debug-collector              - OpenBMC debug collector
 
 inherit core-image
 inherit obmc-phosphor-license
 inherit obmc-phosphor-utils
 
+# TODO: openbmc/openbmc#1407 - Remove with RHEL6 support deprecation.
+#     Set supported kernel back to RHEL6.4's kernel.
+SDK_OLDEST_KERNEL = "2.6.32"
+
 FEATURE_PACKAGES_obmc-bmc-state-mgmt ?= "packagegroup-obmc-apps-bmc-state-mgmt"
 FEATURE_PACKAGES_obmc-chassis-mgmt ?= "${@cf_enabled(d, 'obmc-phosphor-chassis-mgmt', 'virtual-obmc-chassis-mgmt')}"
 FEATURE_PACKAGES_obmc-chassis-state-mgmt ?= "packagegroup-obmc-apps-chassis-state-mgmt"
-FEATURE_PACKAGES_obmc-event-mgmt ?= "${@df_enabled(d, 'obmc-phosphor-event-mgmt', 'virtual-obmc-event-mgmt')}"
+FEATURE_PACKAGES_obmc-fan-control ?= "packagegroup-obmc-apps-fan-control"
 FEATURE_PACKAGES_obmc-fan-mgmt ?= "${@cf_enabled(d, 'obmc-phosphor-fan-mgmt', 'virtual-obmc-fan-mgmt')}"
 FEATURE_PACKAGES_obmc-flash-mgmt ?= "${@cf_enabled(d, 'obmc-phosphor-flash-mgmt', 'virtual-obmc-flash-mgmt')}"
 FEATURE_PACKAGES_obmc-host-ctl ?= "${@cf_enabled(d, 'obmc-host-ctl', 'virtual-obmc-host-ctl')}"
 FEATURE_PACKAGES_obmc-host-ipmi ?= "${@cf_enabled(d, 'obmc-host-ipmi', 'virtual-obmc-host-ipmi-hw')}"
 FEATURE_PACKAGES_obmc-host-state-mgmt ?= "packagegroup-obmc-apps-host-state-mgmt"
+FEATURE_PACKAGES_obmc-host-check-mgmt ?= "packagegroup-obmc-apps-host-check-mgmt"
 FEATURE_PACKAGES_obmc-inventory ?= "packagegroup-obmc-apps-inventory"
 FEATURE_PACKAGES_obmc-leds ?= "packagegroup-obmc-apps-leds"
 FEATURE_PACKAGES_obmc-logging-mgmt ?= "${@df_enabled(d, 'obmc-logging-mgmt', 'virtual-obmc-logging-mgmt')}"
@@ -42,18 +49,21 @@ FEATURE_PACKAGES_obmc-settings-mgmt ?= "${@df_enabled(d, 'obmc-settings-mgmt', '
 FEATURE_PACKAGES_obmc-software ?= "packagegroup-obmc-apps-software"
 FEATURE_PACKAGES_obmc-system-mgmt ?= "${@df_enabled(d, 'obmc-phosphor-system-mgmt', 'virtual-obmc-system-mgmt')}"
 FEATURE_PACKAGES_obmc-user-mgmt ?= "${@df_enabled(d, 'obmc-phosphor-user-mgmt', 'virtual-obmc-user-mgmt')}"
+FEATURE_PACKAGES_obmc-debug-collector ?= "packagegroup-obmc-apps-debug-collector"
+FEATURE_PACKAGES_obmc-settings ?= "packagegroup-obmc-apps-settings"
 
 # Install entire Phosphor application stack by default
 IMAGE_FEATURES += " \
         obmc-bmc-state-mgmt \
         obmc-chassis-mgmt \
         obmc-chassis-state-mgmt \
-        obmc-event-mgmt \
+        obmc-fan-control \
         obmc-fan-mgmt \
         obmc-flash-mgmt \
         obmc-host-ctl \
         obmc-host-ipmi \
         obmc-host-state-mgmt \
+        obmc-host-check-mgmt \
         obmc-inventory \
         obmc-leds \
         obmc-logging-mgmt \
@@ -64,6 +74,7 @@ IMAGE_FEATURES += " \
         obmc-system-mgmt \
         obmc-user-mgmt \
         ssh-server-dropbear \
+        obmc-debug-collector \
         "
 
 CORE_IMAGE_EXTRA_INSTALL_append = " bash \
@@ -76,6 +87,7 @@ CORE_IMAGE_EXTRA_INSTALL_append = " bash \
         ${OBMC_IMAGE_EXTRA_INSTALL} \
         ffdc \
         rsync \
+        rng-tools \
         "
 
 OBMC_IMAGE_EXTRA_INSTALL ?= ""

@@ -1,0 +1,7 @@
+[Unit]
+Description=Phosphor GPIO %I monitor
+
+[Service]
+Restart=no
+EnvironmentFile={envfiledir}/obmc/gpio/%I
+ExecStart={sbindir}/phosphor-gpio-monitor --path=${{PATH}} --key=${{KEY}} --polarity=${{POLARITY}} --target=${{TARGET}}

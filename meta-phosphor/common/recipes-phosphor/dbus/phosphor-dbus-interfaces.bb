@@ -7,16 +7,13 @@ S = "${WORKDIR}/git"
 inherit autotools pkgconfig
 inherit obmc-phosphor-license
 inherit pythonnative
+inherit phosphor-dbus-yaml
 
 DEPENDS += "autoconf-archive-native"
 DEPENDS += "sdbus++-native"
 
-PACKAGE_BEFORE_PN = "${PN}-yaml"
-
-FILES_${PN}-yaml = "${datadir}/${PN}/yaml"
-
 SRC_URI += "git://github.com/openbmc/phosphor-dbus-interfaces"
-SRCREV = "d0e67b3c4f34a59fb0337e4b51fd8ab66f6e21a1"
+SRCREV = "31289a61b73adce1aa6163ec377ddfb29916b8dd"
 
 DEPENDS_remove_class-native = "sdbus++-native"
 DEPENDS_remove_class-nativesdk = "sdbus++-native"

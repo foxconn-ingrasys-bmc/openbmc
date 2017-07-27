@@ -4,19 +4,24 @@ HOMEPAGE = "http://github.com/openbmc/phosphor-networkd"
 PR = "r1"
 
 inherit autotools pkgconfig
+inherit pythonnative
 inherit obmc-phosphor-license
 inherit obmc-phosphor-dbus-service
+inherit phosphor-networkd-rev
 
 DBUS_SERVICE_${PN} += "org.openbmc.NetworkManager.service"
 SYSTEMD_SERVICE_${PN} += "network-update-dns.service"
 
 DEPENDS += "systemd"
 DEPENDS += "autoconf-archive-native"
-RDEPENDS_${PN} += "libsystemd"
-RDEPENDS_${PN} += "python-dbus python-pygobject python-ipy"
+DEPENDS += "sdbusplus sdbusplus-native"
+DEPENDS += "phosphor-dbus-interfaces phosphor-dbus-interfaces-native"
+DEPENDS += "phosphor-logging"
 
-SRC_URI += "git://github.com/openbmc/phosphor-networkd"
-SRCREV = "968d203ef934d68ded7e026d38dc77835116dedd"
+RDEPENDS_${PN} += "libsystemd"
+RDEPENDS_${PN} += "python-dbus python-pygobject python-ipy python-subprocess"
+RDEPENDS_${PN} += "sdbusplus phosphor-dbus-interfaces"
+RDEPENDS_${PN} += "phosphor-logging"
 
 S = "${WORKDIR}/git"
 

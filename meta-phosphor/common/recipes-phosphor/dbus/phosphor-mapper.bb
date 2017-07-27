@@ -12,19 +12,26 @@ inherit obmc-phosphor-systemd
 
 DEPENDS += "systemd"
 DEPENDS += "autoconf-archive-native"
+DEPENDS += "sdbusplus"
+DEPENDS += "phosphor-logging"
 
 DBUS_SERVICE_${PN} += "xyz.openbmc_project.ObjectMapper.service"
-SYSTEMD_SERVICE_${PN} = "mapper-wait@.service"
+SYSTEMD_SERVICE_${PN} += " \
+        mapper-wait@.service \
+        mapper-subtree-remove@.service \
+        "
 RDEPENDS_libmapper += "libsystemd"
 RDEPENDS_${PN} += " \
         python-xml \
         python-dbus \
         python-pygobject \
         pyphosphor-dbus \
+        sdbusplus \
+        phosphor-logging \
         "
 SRC_URI += "git://github.com/openbmc/phosphor-objmgr"
 
-SRCREV = "7fb0fe98b50c75f269728ca61126f2dbc6eabc46"
+SRCREV = "8b633b7ea4ab671a73c1f57d878041f83f672a7e"
 
 S = "${WORKDIR}/git"
 
