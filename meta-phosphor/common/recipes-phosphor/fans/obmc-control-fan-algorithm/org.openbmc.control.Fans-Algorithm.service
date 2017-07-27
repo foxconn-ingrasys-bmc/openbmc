@@ -4,6 +4,7 @@ Description=Phosphor Fan Control
 [Service]
 Restart=always
 ExecStart={sbindir}/fan_algorithm.exe
+ExecStopPost=/usr/bin/python /usr/sbin/set_fan_max_speed.py
 
 [Install]
 WantedBy={SYSTEMD_DEFAULT_TARGET}
