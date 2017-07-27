@@ -88,6 +88,6 @@ HOST_STOP_FMT = "../${HOST_STOP_TMPL}:${HOST_STOP_TGTFMT}.requires/${HOST_STOP_I
 SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_STOP_FMT', 'OBMC_HOST_INSTANCES', 'OBMC_HOST_INSTANCES')}"
 
 SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-state-manager;protocol=git;branch=${FOXCONN_BRANCH}"
-SRCREV = "d6478e63f5b8b92309be8caf0b7f5b7fa546a48f"
+SRCREV = "06f62066e306b400a3e1d1c094f21e567cd4e3a6"
 
 S = "${WORKDIR}/git"

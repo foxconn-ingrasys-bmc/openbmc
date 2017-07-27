@@ -1,5 +1,6 @@
 HOMEPAGE = "http://github.com/openbmc/phosphor-settingsd"
 LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=fa818a259cbed7ce8bc2a22d35a464fc"
-SRC_URI += "git://github.com/openbmc/phosphor-settingsd"
-SRCREV = "c15990a32063192e51c0c3ef5e65e149b2c44d70"
+FOXCONN_BRANCH="foxconn-g2"
+SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-settingsd;branch=${FOXCONN_BRANCH}"
+SRCREV = "7bbc12dc517e8b98abe3df9fab32789d8dbd155a"
