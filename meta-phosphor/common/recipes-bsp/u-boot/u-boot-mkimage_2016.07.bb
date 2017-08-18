@@ -7,7 +7,7 @@ DEPENDS = "openssl"
 
 SRCREV = "b5452c0d29bca88f27ce90ce500565b546bf18e3"
 UBRANCH = "foxconn-v2016.07-aspeed-openbmc"
-SRC_URI = "git://git@github.com/foxconn-bmc-ks/u-boot.git;branch=${UBRANCH};protocol=https"
+SRC_URI = "git://git@github.com/foxconn-ingrasys-bmc/u-boot.git;branch=${UBRANCH};protocol=https"
 
 PV = "v2016.07+git${SRCPV}"
 

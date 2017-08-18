@@ -7,7 +7,7 @@ inherit pythonnative
 
 DEPENDS += "python"
 FOXCONN_BRANCH = "foxconn-openbmc-v1.0-stable"
-SRC_URI += "git://github.com/foxconn-bmc-ks/skeleton;subpath=configs;branch=${FOXCONN_BRANCH}"
+SRC_URI += "git://github.com/foxconn-ingrasys-bmc/skeleton;subpath=configs;branch=${FOXCONN_BRANCH}"
 S = "${WORKDIR}/configs"
 
 python() {

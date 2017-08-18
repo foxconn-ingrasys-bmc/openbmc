@@ -1,6 +1,6 @@
 SUMMARY = "Barreleye board wiring"
 DESCRIPTION = "Board wiring information for the Barreleye system."
-HOMEPAGE = "http://github.com/foxconn-bmc-ks/skeleton"
+HOMEPAGE = "http://github.com/foxconn-ingrasys-bmc/skeleton"
 PR = "r1"
 
 SRCREV = "v10.60.2560"

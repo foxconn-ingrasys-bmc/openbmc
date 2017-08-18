@@ -4,7 +4,7 @@ LICENSE = "GPLv2"
 
 KCONFIG_MODE="--alldefconfig"
 
-KSRC ?= "git://github.com/foxconn-bmc-ks/linux;protocol=git;branch=${KBRANCH}"
+KSRC ?= "git://github.com/foxconn-ingrasys-bmc/linux;protocol=git;branch=${KBRANCH}"
 SRC_URI = "${KSRC}"
 
 LINUX_VERSION_EXTENSION ?= "-${SRCREV}"
