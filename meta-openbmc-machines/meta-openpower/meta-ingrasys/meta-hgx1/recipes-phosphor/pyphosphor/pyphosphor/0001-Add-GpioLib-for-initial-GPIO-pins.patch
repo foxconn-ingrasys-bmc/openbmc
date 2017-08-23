@@ -1,0 +1,88 @@
+From 4a26ecbeeaad70780d67b989c6c2e1720ff37e9b Mon Sep 17 00:00:00 2001
+From: FraHsu <fran.hsu@quantatw.com>
+Date: Mon, 13 Feb 2017 22:38:05 +0800
+Subject: [PATCH] Add GpioLib for initial GPIO pins.
+
+---
+ obmc/gpio_lib.py | 69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 69 insertions(+)
+ create mode 100644 obmc/gpio_lib.py
+
+diff --git a/obmc/gpio_lib.py b/obmc/gpio_lib.py
+new file mode 100644
+index 0000000..2cdea09
+--- /dev/null
++++ b/obmc/gpio_lib.py
+@@ -0,0 +1,68 @@
++#/*************************************************************
++#*                                                            *
++#*   Copyright (C) Microsoft Corporation. All rights reserved.*
++#*                                                            *
++#*************************************************************/
++
++import obmc_system_config as System
++import os
++
++GPIO_SYSFS = '/sys/class/gpio/'
++
++class GpioLib: 
++
++    def __init__(self):
++        self.sys_gpio_path = {}
++        print "gpio lib init ready"
++
++    def InitGpio(self, gpio_name): 
++        if (System.GPIO_CONFIG.has_key(gpio_name) == False):
++            print "ERROR - GPIO Name doesn't exist"
++            return False
++        gpio_info = System.GPIO_CONFIG[gpio_name]
++        direction = gpio_info['direction']
++        if (gpio_info.has_key('gpio_num')):
++            gpio_dec = str(gpio_info['gpio_num'])
++        else:
++            gpio_dec = str(System.convertGpio(gpio_info['gpio_pin']))
++
++        #export gpio
++        if (os.path.exists(GPIO_SYSFS+'export') == False):
++            return False
++        if (os.path.exists(GPIO_SYSFS+'gpio'+gpio_dec) == False):
++            with open(GPIO_SYSFS+'export','w') as f:
++                f.write(gpio_dec)
++        #print 'Initial GPIO------>' + gpio_name
++        #Write direction and interrupt setting if set
++        if (direction == 'in' or direction == 'out'):
++            gpio_dir = direction
++        elif (direction == 'rising' or direction == 'falling' or
++              direction == 'both'):
++            gpio_dir = 'in'
++            gpio_edge = direction
++
++            with open(GPIO_SYSFS+'gpio'+gpio_dec+'/edge','w') as f:
++                f.write(gpio_edge)
++        else:
++            return False
++
++        if gpio_dir == 'in':
++            with open(GPIO_SYSFS+'gpio'+gpio_dec+'/direction', 'w') as f:
++                f.write(gpio_dir)
++        else:
++            gpio_path = GPIO_SYSFS+'gpio'+gpio_dec+'/value'
++            print 'Path:'+gpio_path
++            with open (gpio_path, 'r') as f:
++                for line in f:
++                    value =line.rstrip('\n')
++            print 'gpio value ==>' + value
++            if value =='0':
++                gpio_dir = 'low'
++            else:
++                gpio_dir = 'high'
++            with open(GPIO_SYSFS+'gpio'+gpio_dec+'/direction', 'w') as f:
++                f.write(gpio_dir)
++
++        self.sys_gpio_path[gpio_name] = GPIO_SYSFS+'gpio'+gpio_dec+'/value'
++
++        return True      
+\ No newline at end of file
+-- 
+1.9.1
+
