@@ -77,12 +77,6 @@ VIRTUAL-RUNTIME_obmc-led-monitor ?= "phosphor-led-manager-faultmonitor"
 # Linux kernel LED subsystem LEDs.
 VIRTUAL-RUNTIME_obmc-leds-sysfs ?= "phosphor-led-sysfs"
 
-# obmc-bmc-code-mgr
-#
-# Provides an implementation of the xyz.openbmc_project.Software.Version
-# interface.
-VIRTUAL-RUNTIME_obmc-bmc-code-mgr ?= "phosphor-software-manager-version"
-
 # obmc-bmc-download-mgr
 #
 # Provides an implementation of the xyz.openbmc_project.Common.TFTP
@@ -128,6 +122,11 @@ VIRTUAL-RUNTIME_phosphor-hwmon-config ?= \
 #
 # Provides a manager for user settings.
 VIRTUAL-RUNTIME_obmc-settings-mgr ?= "phosphor-settings-manager"
+
+# obmc-network-manager
+#
+# Provide support for managing network
+VIRTUAL-RUNTIME_obmc-network-manager ?= "network"
 
 # virtual/phosphor-ipmi-fru-hostfw-config
 #
@@ -186,7 +185,7 @@ PREFERRED_PROVIDER_virtual/phosphor-logging-callouts ?= \
 # configuration files in the format and native sysroot location expected by
 # the phosphor-fan-presence build process in the native sysroot.
 PREFERRED_PROVIDER_virtual/phosphor-fan-presence-config ?= \
-    "${@cf_enabled(d, 'obmc-mrw', 'phosphor-fan-presence-mrw-native', 'phosphor-fan-presence-example-native')}"
+    "${@cf_enabled(d, 'obmc-mrw', 'phosphor-fan-presence-mrw-native', 'phosphor-fan-presence-config-native')}"
 
 # The phosphor-fan-control application is data driven and requires a YAML
 # file to define the fans in the system.

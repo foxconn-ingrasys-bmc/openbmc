@@ -48,16 +48,50 @@ RDEPENDS_${PN}-updater += " \
     phosphor-logging \
     phosphor-dbus-interfaces \
     sdbusplus \
+    virtual-obmc-image-manager \
+"
+
+RPROVIDES_${PN}-version += " \
+    virtual-obmc-image-manager \
 "
 
 FILES_${PN}-version += "${sbindir}/phosphor-version-software-manager"
 FILES_${PN}-download-mgr += "${sbindir}/phosphor-download-manager"
-FILES_${PN}-updater += "${sbindir}/phosphor-image-updater"
+FILES_${PN}-updater += " \
+    ${sbindir}/phosphor-image-updater \
+    ${sbindir}/obmc-flash-bmc \
+    "
 DBUS_SERVICE_${PN}-version += "xyz.openbmc_project.Software.Version.service"
 DBUS_SERVICE_${PN}-download-mgr += "xyz.openbmc_project.Software.Download.service"
 DBUS_SERVICE_${PN}-updater += "xyz.openbmc_project.Software.BMC.Updater.service"
 
+SYSTEMD_SERVICE_${PN}-updater += " \
+    obmc-flash-bmc-ubirw.service \
+    obmc-flash-bmc-ubiro@.service \
+    obmc-flash-bmc-setenv@.service \
+    obmc-flash-bmc-ubirw-remove.service \
+    obmc-flash-bmc-ubiro-remove@.service \
+    usr-local.mount \
+    obmc-flash-bmc-ubiremount.service \
+    "
+
+# Name of the mtd device where the ubi volumes should be created
+BMC_RW_MTD ??= "pnor"
+BMC_RO_MTD ??= "pnor"
+# TODO Change kernel location to primary BMC chip once the rofs/rwfs mtd devices
+# are merged into a single ubi one openbmc/openbmc#1942
+BMC_KERNEL_MTD ??= "pnor"
+SYSTEMD_SUBSTITUTIONS += "RW_MTD:${BMC_RW_MTD}:obmc-flash-bmc-ubirw.service"
+SYSTEMD_SUBSTITUTIONS += "RO_MTD:${BMC_RO_MTD}:obmc-flash-bmc-ubiro@.service"
+SYSTEMD_SUBSTITUTIONS += "KERNEL_MTD:${BMC_KERNEL_MTD}:obmc-flash-bmc-ubiro@.service"
+
+SRC_URI += "file://obmc-flash-bmc"
+do_install_append() {
+    install -d ${D}${sbindir}
+    install -m 0755 ${WORKDIR}/obmc-flash-bmc ${D}${sbindir}/obmc-flash-bmc
+}
+
 SRC_URI += "git://github.com/openbmc/phosphor-bmc-code-mgmt"
-SRCREV = "84a0e69342f8b31b213377c190c1189f464327b5"
+SRCREV = "b1cfdf99c4b9cccccb21f34150d962004dfa4fef"
 
 S = "${WORKDIR}/git"

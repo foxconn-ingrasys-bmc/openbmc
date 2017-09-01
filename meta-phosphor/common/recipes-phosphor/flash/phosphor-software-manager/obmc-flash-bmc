@@ -1,0 +1,171 @@
+#!/bin/sh
+
+# Get the mtd device number (mtdX)
+findmtd() {
+  m="$(grep -xl "$1" /sys/class/mtd/*/name)"
+  m="${m%/name}"
+  m="${m##*/}"
+  echo "${m}"
+}
+
+# Get the ubi device number (ubiX_Y)
+findubi() {
+  u="$(grep -xl "$1" /sys/class/ubi/ubi?/subsystem/ubi*/name)"
+  u="${u%/name}"
+  u="${u##*/}"
+  echo "${u}"
+}
+
+ubi_rw() {
+  rwmtd="$(findmtd "${reqmtd}")"
+  rw="${rwmtd#mtd}"
+  ubidev="/dev/ubi${rw}"
+
+  if [ "$(fw_printenv rwreset)" == "rwreset=true" ]; then
+    ubi_remove
+    fw_setenv rwreset
+  fi
+
+  # Create a ubi volume of size 4MB, that is the current size of the rwfs image
+  vol="$(findubi "${name}")"
+  if [ -z "${vol}" ]; then
+    ubimkvol "${ubidev}" -N "${name}" -s 4MiB
+  fi
+}
+
+ubi_ro() {
+  romtd="$(findmtd "${reqmtd}")"
+  ro="${romtd#mtd}"
+  ubidev="/dev/ubi${ro}"
+
+  # Create a static ubi volume
+  # TODO Get the actual image size openbmc/openbmc#1840
+  vol="$(findubi "${name}")"
+  if [ -z "${vol}" ]; then
+    ubimkvol "${ubidev}" -N "${name}" -s "${imgsize}" --type=static
+    vol="$(findubi "${name}")"
+  fi
+}
+
+# Squashfs images need a ubi block
+ubi_block() {
+  vol="$(findubi "${name}")"
+  ubidevid="${vol#ubi}"
+  block="/dev/ubiblock${ubidevid}"
+  if [ ! -e "$block" ]; then
+    ubiblock --create "/dev/ubi${ubidevid}"
+  fi
+}
+
+ubi_updatevol() {
+  vol="$(findubi "${name}")"
+  ubidevid="${vol#ubi}"
+  img="/tmp/images/${version}/${imgfile}"
+  ubiupdatevol "/dev/ubi${ubidevid}" "${img}"
+}
+
+ubi_remove() {
+    vol="$(findubi "${name}")"
+
+    if [ ! -z "$vol" ]; then
+        vol="${vol%_*}"
+
+        if grep -q "${vol}:$name" /proc/mounts; then
+            mountdir=$(grep "${vol}:$name" /proc/mounts | cut -d " " -f 2)
+            umount "$mountdir"
+            rm -r "$mountdir"
+        fi
+
+        ubirmvol "/dev/${vol}" -N "$name"
+    fi
+}
+
+remount_ubi() {
+  # Get a list of all devices formatted as UBI
+  for file in /dev/mtd*; do
+    if [[ $(hexdump -C -n 3 $file) =~ "UBI" ]]; then
+      mtd="${file: -1}"
+      if [[ $mtd =~ ^-?[0-9]+$ ]]; then
+        mtds=${mtd},${mtds}
+      fi
+    fi
+  done
+
+  IFS=',' read -r -a mtds <<< "$mtds"
+  mtds=($(echo "${mtds[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+  for mtd in ${mtds[@]}; do
+    # Re-attach mtd device to ubi if not already done
+    ubiattach /dev/ubi_ctrl -m "${mtd}" -d "${mtd}" &> /dev/null
+    # Get information on all ubi volumes
+    ubinfo=$(ubinfo -d ${mtd})
+    presentVolumes=${ubinfo##*:}
+    IFS=', ' read -r -a array <<< "$presentVolumes"
+    for element in ${array[@]}; do
+      elementProperties=$(ubinfo -d $mtd -n $element)
+      # Get ubi volume name by getting rid of additional properties
+      name=${elementProperties#*Name:}
+      name="${name%Character*}"
+      name="$(echo -e "${name}" | tr -d '[:space:]')"
+
+      if [[ ${name} == ro-* ]]; then
+        mountdir="/media/${name}"
+        mkdir -p "${mountdir}"
+        ubiblock --create /dev/ubi${mtd}_${element} &> /dev/null
+        mount -t squashfs -o ro "/dev/ubiblock${mtd}_${element}" "${mountdir}"
+      fi
+    done
+  done
+}
+
+ubi_setenv() {
+    varName="${variable%"\x3d"*}"
+    value="${variable##*"\x3d"}"
+    fw_setenv "$varName" "$value"
+}
+
+case "$1" in
+  ubirw)
+    reqmtd="$2"
+    name="$3"
+    ubi_rw
+    ;;
+  ubiro)
+    reqmtd="$2"
+    name="$3"
+    version="$4"
+    imgfile="image-rofs"
+    imgsize="16MiB"
+    ubi_ro
+    ubi_block
+    ubi_updatevol
+    ;;
+  ubikernel)
+    reqmtd="$2"
+    name="$3"
+    version="$4"
+    imgfile="image-kernel"
+    imgsize="4MiB"
+    ubi_ro
+    ubi_updatevol
+    ;;
+  ubiremove)
+    name="$2"
+    ubi_remove
+    ;;
+  ubisetenv)
+    variable="$2"
+    ubi_setenv
+    ;;
+  ubiremount)
+    remount_ubi
+    ;;
+  *)
+    echo "Invalid argument"
+    exit 1
+    ;;
+esac
+rc=$?
+if [ ${rc} -ne 0 ]; then
+  echo "$0: error ${rc}"
+  exit ${rc}
+fi

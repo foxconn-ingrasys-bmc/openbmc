@@ -1,7 +1,26 @@
+0x08:
+  sensorType: 0x09
+  path: /org/open_power/control/occ0
+  sensorReadingType: 0x09
+  serviceInterface: org.freedesktop.DBus.Properties
+  readingType: assertion
+  interfaces:
+    org.open_power.OCC.Status:
+      OccActive:
+          0x00:
+            assert: false
+            deassert: true
+            type: bool
+          0x01:
+            assert: true
+            deassert: false
+            type: bool
 0x1e:
   sensorType: 0x0C
   path: /system/chassis/motherboard/dimm0
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.Inventory.Item:
       Present:
@@ -19,6 +38,8 @@
   sensorType: 0x0C
   path: /system/chassis/motherboard/dimm1
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.Inventory.Item:
       Present:
@@ -36,6 +57,8 @@
   sensorType: 0x0C
   path: /system/chassis/motherboard/dimm2
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.Inventory.Item:
       Present:
@@ -53,6 +76,8 @@
   sensorType: 0x0C
   path: /system/chassis/motherboard/dimm3
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.Inventory.Item:
       Present:
@@ -70,6 +95,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -87,6 +114,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core0
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -104,6 +133,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core1
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -121,6 +152,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core2
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -138,6 +171,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core3
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -155,6 +190,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core4
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -172,6 +209,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core5
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -189,6 +228,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core6
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -206,6 +247,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core7
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -223,6 +266,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core8
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -240,6 +285,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core9
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -257,6 +304,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core10
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:
@@ -274,6 +323,8 @@
   sensorType: 0x07
   path: /system/chassis/motherboard/cpu0/core11
   sensorReadingType: 0x6F
+  serviceInterface: xyz.openbmc_project.Inventory.Manager
+  readingType: assertion
   interfaces:
     xyz.openbmc_project.State.Decorator.OperationalStatus:
       Functional:

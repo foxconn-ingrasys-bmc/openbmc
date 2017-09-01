@@ -17,6 +17,7 @@ DEPENDS += "python-pyyaml-native"
 DEPENDS += "python-mako-native"
 DEPENDS += "sdbusplus"
 DEPENDS += "phosphor-logging"
+DEPENDS += "libevdev"
 
 # Package configuration
 FAN_PACKAGES = " \
@@ -36,7 +37,7 @@ RDEPENDS_${PN}-staticdev = "${FAN_PACKAGES}"
 # ${PN}-presence-tach specific configuration
 PACKAGECONFIG[presence] = " \
         --enable-presence \
-        FAN_DETECT_YAML_FILE=${STAGING_DIR_NATIVE}${presence_datadir}/config.yaml, \
+        PRESENCE_CONFIG=${STAGING_DIR_NATIVE}${presence_datadir}/config.yaml, \
         --disable-presence, \
         virtual/phosphor-fan-presence-config \
         , \
@@ -108,4 +109,4 @@ SYSTEMD_LINK_${PN}-monitor += "${@compose_list(d, 'FMT_MONITOR', 'OBMC_CHASSIS_I
 
 # --------------------------------------
 # phosphor-cooling-type specific configuration
-PACKAGECONFIG[cooling-type] = "--enable-cooling-type,--disable-cooling-type,libevdev,"
+PACKAGECONFIG[cooling-type] = "--enable-cooling-type,--disable-cooling-type,,"

@@ -39,19 +39,16 @@ RDEPENDS_${PN}-chassis += "${@mf_enabled(d, 'p9-cfam-override', 'p9-cfam-overrid
 
 SUMMARY_${PN}-fans = "OpenPOWER Fans"
 RDEPENDS_${PN}-fans = " \
-        obmc-hwmon \
         obmc-control-fan \
         obmc-control-fan-algorithm \
         "
 
 SUMMARY_${PN}-flash = "OpenPOWER Flash"
 RDEPENDS_${PN}-flash = " \
-        obmc-flash-bios \
-        obmc-flash-bmc \
-        obmc-mgr-download \
-        obmc-op-flasher \
-        obmc-control-bmc \
-        openpower-software-manager \
+        obmc-flash-bmc obmc-mgr-download obmc-control-bmc \
+        ${@mf_enabled(d, 'openpower-ubi-fs', \
+            'openpower-software-manager', \
+            'obmc-flash-bios obmc-mgr-download obmc-op-flasher')} \
         "
 
 SUMMARY_${PN}-system = "OpenPOWER System"

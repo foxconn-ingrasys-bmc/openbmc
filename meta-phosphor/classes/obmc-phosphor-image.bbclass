@@ -51,6 +51,7 @@ FEATURE_PACKAGES_obmc-system-mgmt ?= "${@df_enabled(d, 'obmc-phosphor-system-mgm
 FEATURE_PACKAGES_obmc-user-mgmt ?= "${@df_enabled(d, 'obmc-phosphor-user-mgmt', 'virtual-obmc-user-mgmt')}"
 FEATURE_PACKAGES_obmc-debug-collector ?= "packagegroup-obmc-apps-debug-collector"
 FEATURE_PACKAGES_obmc-settings ?= "packagegroup-obmc-apps-settings"
+FEATURE_PACKAGES_obmc-network-mgmt ?= "packagegroup-obmc-apps-network"
 
 # Install entire Phosphor application stack by default
 IMAGE_FEATURES += " \
@@ -75,6 +76,9 @@ IMAGE_FEATURES += " \
         obmc-user-mgmt \
         ssh-server-dropbear \
         obmc-debug-collector \
+        obmc-network-mgmt \
+        obmc-settings \
+        ${@mf_enabled(d, 'obmc-ubi-fs', 'read-only-rootfs')} \
         "
 
 CORE_IMAGE_EXTRA_INSTALL_append = " bash \
@@ -91,14 +95,6 @@ CORE_IMAGE_EXTRA_INSTALL_append = " bash \
         "
 
 OBMC_IMAGE_EXTRA_INSTALL ?= ""
-
-def image_overlay_enabled(d, ifEnabledStr):
-        if d.getVar('OBMC_PHOSPHOR_IMAGE_OVERLAY', True) != "1":
-            return ""
-        return ifEnabledStr
-
-IMAGE_FSTYPES += "${@image_overlay_enabled(d, "overlay")}"
-inherit ${@image_overlay_enabled(d, "image-overlay")}
 
 do_image_complete[depends] += "obmc-phosphor-debug-tarball:do_image_complete"
 

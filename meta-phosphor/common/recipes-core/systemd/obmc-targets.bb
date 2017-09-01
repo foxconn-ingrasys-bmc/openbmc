@@ -19,7 +19,8 @@ CHASSIS_SYNCH_TARGETS = "start-pre start on stop-pre stop off reset-on"
 # - on:  Services to run to power on the chassis
 # - off: Services to run to power off the chassis
 # - reset: Services to check chassis power state and update chassis "on" target
-CHASSIS_ACTION_TARGETS = "on off reset"
+# - hard-off: Services to force an immediate power off of the chassis
+CHASSIS_ACTION_TARGETS = "poweron poweroff powerreset hard-poweroff"
 
 # Track all host synchronization point targets
 # - start-pre:                 Services to run before we start host boot
@@ -39,15 +40,16 @@ HOST_SYNCH_TARGETS = "start-pre starting started stop-pre stopping stopped reset
 #            quiesce target but the only delta is that this target contains
 #            multiple services and one of them is the quiesce target.
 # - timeout: Target to run when host watchdog times out
-HOST_ACTION_TARGETS = "start stop quiesce reset shutdown crash timeout"
+# - reboot:  Reboot the host
+HOST_ACTION_TARGETS = "start stop quiesce reset shutdown crash timeout reboot"
 
 CHASSIS_SYNCH_FMT = "obmc-power-{0}@.target"
-CHASSIS_ACTION_FMT = "obmc-chassis-power{0}@.target"
+CHASSIS_ACTION_FMT = "obmc-chassis-{0}@.target"
 HOST_SYNCH_FMT = "obmc-host-{0}@.target"
 HOST_ACTION_FMT = "obmc-host-{0}@.target"
 
 CHASSIS_LINK_SYNCH_FMT = "${CHASSIS_SYNCH_FMT}:obmc-power-{0}@{1}.target"
-CHASSIS_LINK_ACTION_FMT = "${CHASSIS_ACTION_FMT}:obmc-chassis-power{0}@{1}.target"
+CHASSIS_LINK_ACTION_FMT = "${CHASSIS_ACTION_FMT}:obmc-chassis-{0}@{1}.target"
 HOST_LINK_SYNCH_FMT = "${HOST_SYNCH_FMT}:obmc-host-{0}@{1}.target"
 HOST_LINK_ACTION_FMT = "${HOST_ACTION_FMT}:obmc-host-{0}@{1}.target"
 FAN_LINK_FMT = "obmc-fan-control-ready@.target:obmc-fan-control-ready@{0}.target"

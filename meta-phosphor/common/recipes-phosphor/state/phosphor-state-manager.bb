@@ -31,6 +31,7 @@ DEPENDS += "autoconf-archive-native"
 DEPENDS += "sdbusplus"
 DEPENDS += "phosphor-logging"
 DEPENDS += "phosphor-dbus-interfaces"
+DEPENDS += "cereal"
 RDEPENDS_${PN} += "sdbusplus"
 
 RDEPENDS_${PN}-host += "libsystemd phosphor-dbus-interfaces"
@@ -41,6 +42,7 @@ RDEPENDS_${PN}-host-check += "libsystemd phosphor-dbus-interfaces"
 
 FILES_${PN}-host = "${sbindir}/phosphor-host-state-manager"
 DBUS_SERVICE_${PN}-host += "xyz.openbmc_project.State.Host.service"
+DBUS_SERVICE_${PN}-host += "phosphor-reboot-host@.service"
 
 FILES_${PN}-chassis = "${sbindir}/phosphor-chassis-state-manager"
 DBUS_SERVICE_${PN}-chassis += "xyz.openbmc_project.State.Chassis.service"
@@ -80,12 +82,25 @@ INSTFMT = "phosphor-discover-system-state@{0}.service"
 FMT = "../${TMPL}:${SYSTEMD_DEFAULT_TARGET}.wants/${INSTFMT}"
 SYSTEMD_LINK_${PN}-discover += "${@compose_list(d, 'FMT', 'OBMC_HOST_INSTANCES')}"
 
-# Force the shutdown target to run the host-stop target
-HOST_STOP_TMPL = "obmc-host-stop@.target"
+# Force the shutdown target to run the chassis-poweroff target
+CHASSIS_STOP_TMPL = "obmc-chassis-poweroff@.target"
 HOST_STOP_TGTFMT = "obmc-host-shutdown@{1}.target"
-HOST_STOP_INSTFMT = "obmc-host-stop@{0}.target"
-HOST_STOP_FMT = "../${HOST_STOP_TMPL}:${HOST_STOP_TGTFMT}.requires/${HOST_STOP_INSTFMT}"
-SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_STOP_FMT', 'OBMC_HOST_INSTANCES', 'OBMC_HOST_INSTANCES')}"
+CHASSIS_STOP_INSTFMT = "obmc-chassis-poweroff@{0}.target"
+HOST_STOP_FMT = "../${CHASSIS_STOP_TMPL}:${HOST_STOP_TGTFMT}.requires/${CHASSIS_STOP_INSTFMT}"
+SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_STOP_FMT', 'OBMC_CHASSIS_INSTANCES', 'OBMC_HOST_INSTANCES')}"
+
+# Force the host reboot target to run the shutdown target
+HOST_SHUTDOWN_TMPL = "obmc-host-shutdown@.target"
+HOST_REBOOT_TGTFMT = "obmc-host-reboot@{0}.target"
+HOST_SHUTDOWN_INSTFMT = "obmc-host-shutdown@{0}.target"
+HOST_REBOOT_FMT = "../${HOST_SHUTDOWN_TMPL}:${HOST_REBOOT_TGTFMT}.requires/${HOST_SHUTDOWN_INSTFMT}"
+SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_REBOOT_FMT', 'OBMC_HOST_INSTANCES')}"
+
+# And also force the reboot target to call the host start service
+HOST_REBOOT_SVC = "phosphor-reboot-host@.service"
+HOST_REBOOT_SVC_INST = "phosphor-reboot-host@{0}.service"
+HOST_REBOOT_SVC_FMT = "../${HOST_REBOOT_SVC}:${HOST_REBOOT_TGTFMT}.requires/${HOST_REBOOT_SVC_INST}"
+SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_REBOOT_SVC_FMT', 'OBMC_HOST_INSTANCES', 'OBMC_HOST_INSTANCES')}"
 
 SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-state-manager;protocol=git;branch=${FOXCONN_BRANCH}"
 SRCREV = "06f62066e306b400a3e1d1c094f21e567cd4e3a6"

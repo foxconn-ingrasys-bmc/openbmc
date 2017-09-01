@@ -1,0 +1,292 @@
+#!/bin/sh
+
+# Get the mtd device number (mtdX)
+findmtd() {
+  m="$(grep -xl "$1" /sys/class/mtd/*/name)"
+  m="${m%/name}"
+  m="${m##*/}"
+  echo "${m}"
+}
+
+# Get the ubi device number (ubiX_Y)
+findubi() {
+  u="$(grep -xl "$1" /sys/class/ubi/ubi?/subsystem/ubi*/name)"
+  u="${u%/name}"
+  u="${u##*/}"
+  echo "${u}"
+}
+
+# Get the mount information
+is_mounted() {
+  grep -q "$1" /proc/mounts
+  return $?
+}
+
+# Attach the pnor mtd device to ubi.
+attach_ubi() {
+  pnormtd="$(findmtd pnor)"
+  pnor="${pnormtd#mtd}"
+  pnordev="/dev/mtd${pnor}"
+
+  if [ -d "/sys/class/ubi/ubi${pnor}" ]; then
+    # Already attached
+    return 0
+  fi
+
+  ubiattach /dev/ubi_ctrl -m "${pnor}" -d "${pnor}"
+  rc=$?
+  if [ ${rc} -ne 0 ]; then
+    # Check the pnor mtd device is formatted as ubi by reading the first 3 byes,
+    # which should be the ascii chars 'UBI'
+    magic="$(hexdump -C -n 3 ${pnordev})"
+    if [[ "${magic}" =~ "UBI" ]]; then
+      # Device already formatted as ubi, ubiattach failed for some other reason
+      return ${rc}
+    else
+      # Format device as ubi
+      echo "Starting ubiformat ${pnordev}"
+      ubiformat "${pnordev}" -y -q
+      # Retry the ubiattach
+      ubiattach /dev/ubi_ctrl -m "${pnor}" -d "${pnor}"
+    fi
+  fi
+}
+
+mount_squashfs() {
+  pnormtd="$(findmtd pnor)"
+  ubidev="/dev/ubi${pnormtd#mtd}"
+  mountdir="/media/${name}"
+  vol="$(findubi "${name}")"
+
+  if is_mounted "${name}"; then
+    echo "${name} is already mounted."
+    return 0
+  fi
+
+  if [ ! -z "${vol}" ]; then
+    ubirmvol "${ubidev}" -N "${name}"
+  fi
+
+  if [ ! -d "${mountdir}" ]; then
+    mkdir "${mountdir}"
+  fi
+
+  # Create a static ubi volume of arbitrary size 24MB,
+  # the current pnor image is ~19MB
+  # TODO Set size based on file size openbmc/openbmc#1840
+  ubimkvol "${ubidev}" -N "${name}" -s 24MiB --type=static
+  vol="$(findubi "${name}")"
+
+  if [ $? != 0 ]; then
+    echo "Unable to create RO volume!"
+    return 1
+  fi
+
+  ubidevid="${vol#ubi}"
+  img="/tmp/images/${version}/pnor.xz.squashfs"
+  ubiupdatevol "/dev/ubi${ubidevid}" "${img}"
+
+  if [ $? != 0 ]; then
+    echo "Unable to update RO volume!"
+    return 1
+  fi
+
+  ubiblock --create "/dev/ubi${ubidevid}"
+
+  if [ $? != 0 ]; then
+    echo "Unable to create UBI block for RO volume!"
+    return 1
+  fi
+
+  mount -t squashfs -o ro "/dev/ubiblock${ubidevid}" "${mountdir}"
+
+  if [ $? != 0 ]; then
+    echo "Unable to mount RO volume!"
+    return 1
+  fi
+}
+
+mount_ubi() {
+  pnormtd="$(findmtd pnor)"
+  pnor="${pnormtd#mtd}"
+  ubidev="/dev/ubi${pnor}"
+
+  if [[ "${name}" == "pnor-patch" ]]; then
+    mountdir="/usr/local/share/pnor"
+  else
+    mountdir="/media/${name}"
+  fi
+
+  if [[ "${name}" == "pnor-prsv" ]]; then
+    size="2MiB"
+  else
+    size="16MiB"
+  fi
+
+  if [ ! -d "${mountdir}" ]; then
+    mkdir -p "${mountdir}"
+  fi
+
+  vol="$(findubi "${name}")"
+  if [ -z "${vol}" ]; then
+    ubimkvol "${ubidev}" -N "${name}" -s "${size}"
+  fi
+
+  if ! is_mounted "${name}"; then
+    mountdev="ubi${pnor}:${name}"
+    mount -t ubifs "${mountdev}" "${mountdir}"
+  fi
+}
+
+umount_ubi() {
+  pnormtd="$(findmtd pnor)"
+  pnor="${pnormtd#mtd}"
+  ubidev="/dev/ubi${pnor}"
+  mountdir="/media/${name}"
+
+  if is_mounted "${name}"; then
+    umount "${mountdir}"
+  fi
+
+  vol="$(findubi "${name}")"
+  if [ -n "${vol}" ]; then
+    ubirmvol "${ubidev}" -N "${name}"
+  fi
+
+  if [ -d "${mountdir}" ]; then
+    rm -r "${mountdir}"
+  fi
+}
+
+remount_ubi() {
+  pnormtd="$(findmtd pnor)"
+  pnor="${pnormtd#mtd}"
+  pnordev="/dev/mtd${pnor}"
+
+  # Re-Attach the pnor mtd device to ubi
+  if [[ $(hexdump -C -n 3 ${pnordev}) =~ "UBI" ]]; then
+    ubiattach /dev/ubi_ctrl -m "${pnor}" -d "${pnor}"
+  else
+    # Device not formatted as ubi.
+    return 0
+  fi
+
+  # Get information on all ubi volumes
+  ubinfo=$(ubinfo -d ${pnor})
+  presentVolumes=${ubinfo##*:}
+  IFS=', ' read -r -a array <<< "$presentVolumes"
+  for element in ${array[@]};
+  do
+    elementProperties=$(ubinfo -d $pnor -n $element)
+    # Get ubi volume name by getting rid of additional properties
+    name=${elementProperties#*Name:}
+    name="${name%Character*}"
+    name="$(echo -e "${name}" | tr -d '[:space:]')"
+
+    if [[ ${name} == pnor-prsv ]] || [[ ${name} == pnor-rw* ]] || [[ ${name} == pnor-ro* ]]; then
+      mountdir="/media/${name}"
+      if [ ! -d "${mountdir}" ]; then
+        mkdir -p "${mountdir}"
+      fi
+
+      if [[ ${name} == pnor-ro* ]]
+      then
+        ubiblock --create /dev/ubi${pnor}_${element}
+        mount -t squashfs -o ro "/dev/ubiblock${pnor}_${element}" "${mountdir}"
+      else
+        mount -t ubifs "ubi${pnor}:${name}" "${mountdir}"
+      fi
+    fi
+  done
+}
+
+update_symlinks() {
+  PNOR_ACTIVE_PATH="/var/lib/phosphor-software-manager/pnor/"
+  PNOR_RO_ACTIVE_PATH="/var/lib/phosphor-software-manager/pnor/ro"
+  PNOR_RO_PREFIX="/media/pnor-ro-"
+  PNOR_RW_ACTIVE_PATH="/var/lib/phosphor-software-manager/pnor/rw"
+  PNOR_RW_PREFIX="/media/pnor-rw-"
+  PNOR_PRSV_ACTIVE_PATH="/var/lib/phosphor-software-manager/pnor/prsv"
+  PNOR_PRSV="/media/pnor-prsv"
+  PERSISTENCE_PATH="/var/lib/obmc/openpower-pnor-code-mgmt/"
+
+  # Get a list of all active PNOR versions
+  data="$(ls -d ${PNOR_RO_PREFIX}*)"
+  IFS=$'\n'  array=(${data})
+
+  currentVersion=""
+  lowestPriority=255
+  for element in ${array[@]}; do
+    #Remove the PNOR_RO_PREFIX from the path to get version ID.
+    versionId="${element#${PNOR_RO_PREFIX}}"
+
+    # Get the priority of active versions from persistence files.
+    if [[ -f "${PERSISTENCE_PATH}${versionId}" ]]; then
+      data="$(grep -r "priority" ${PERSISTENCE_PATH}${versionId})"
+      priority="${data: -1}"
+      if [[ priority -le lowestPriority  ]]; then
+        lowestPriority=${priority}
+        currentVersion=${versionId}
+      fi
+    fi
+  done
+
+  # Return if no active version found
+  if [ -z $currentVersion ]; then
+    return 0;
+  fi
+
+  if [ ! -d "${PNOR_ACTIVE_PATH}" ]; then
+        mkdir -p "${PNOR_ACTIVE_PATH}"
+  fi
+
+  # If the RW or RO active links doesn't point to the version with
+  # lowest priority, then remove the symlink and create new ones.
+  if [[ $(readlink -f "${PNOR_RO_ACTIVE_PATH}") != ${PNOR_RO_PREFIX}${currentVersion}  ]]; then
+    rm -f ${PNOR_RO_ACTIVE_PATH}
+    ln -sfv ${PNOR_RO_PREFIX}${currentVersion} ${PNOR_RO_ACTIVE_PATH}
+  fi
+
+  if [[ $(readlink -f "${PNOR_RW_ACTIVE_PATH}") != ${PNOR_RW_PREFIX}${currentVersion}  ]]; then
+    rm -f ${PNOR_RW_ACTIVE_PATH}
+    ln -sfv ${PNOR_RW_PREFIX}${currentVersion} ${PNOR_RW_ACTIVE_PATH}
+  fi
+
+  if [[ ! -h ${PNOR_PRSV_ACTIVE_PATH}  ]]; then
+    ln -sfv ${PNOR_PRSV} ${PNOR_PRSV_ACTIVE_PATH}
+  fi
+}
+
+case "$1" in
+  ubiattach)
+    attach_ubi
+    ;;
+  squashfsmount)
+    name="$2"
+    version="$3"
+    mount_squashfs
+    ;;
+  ubimount)
+    name="$2"
+    mount_ubi
+    ;;
+  ubiumount)
+    name="$2"
+    umount_ubi
+    ;;
+  ubiremount)
+    remount_ubi
+    ;;
+  updatesymlinks)
+    update_symlinks
+    ;;
+  *)
+    echo "Invalid argument"
+    exit 1
+    ;;
+esac
+rc=$?
+if [ ${rc} -ne 0 ]; then
+  echo "$0: error ${rc}"
+  exit ${rc}
+fi

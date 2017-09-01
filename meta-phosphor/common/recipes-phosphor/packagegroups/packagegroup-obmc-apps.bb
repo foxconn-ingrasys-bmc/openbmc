@@ -20,6 +20,7 @@ PACKAGES = " \
         ${PN}-host-check-mgmt \
         ${PN}-debug-collector \
         ${PN}-settings \
+        ${PN}-network \
         "
 
 SUMMARY_${PN}-bmc-state-mgmt = "BMC state management"
@@ -84,7 +85,6 @@ RDEPENDS_${PN}-sensors = " \
 
 SUMMARY_${PN}-software = "Software applications"
 RDEPENDS_${PN}-software = " \
-        ${VIRTUAL-RUNTIME_obmc-bmc-code-mgr} \
         ${VIRTUAL-RUNTIME_obmc-bmc-download-mgr} \
         ${VIRTUAL-RUNTIME_obmc-bmc-updater} \
         "
@@ -92,9 +92,15 @@ SUMMARY_${PN}-debug-collector = "BMC debug collector"
 RDEPENDS_${PN}-debug-collector = " \
         ${VIRTUAL-RUNTIME_obmc-dump-manager} \
         ${VIRTUAL-RUNTIME_obmc-dump-monitor} \
+        phosphor-debug-collector-dreport \
         "
 
 SUMMARY_${PN}-settings = "Settings applications"
 RDEPENDS_${PN}-settings = " \
         ${VIRTUAL-RUNTIME_obmc-settings-mgr} \
+        "
+
+SUMMARY_${PN}-network = "BMC Network Manager"
+RDEPENDS_${PN}-network = " \
+        ${VIRTUAL-RUNTIME_obmc-network-manager} \
         "

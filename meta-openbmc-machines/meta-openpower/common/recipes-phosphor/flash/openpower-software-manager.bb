@@ -22,22 +22,20 @@ RDEPENDS_${PN} += " \
         phosphor-dbus-interfaces \
         phosphor-logging \
         sdbusplus \
+        virtual-obmc-image-manager \
         "
 
 S = "${WORKDIR}/git"
 
 SRC_URI += "git://github.com/openbmc/openpower-pnor-code-mgmt"
 
-SRC_URI += " \
-        file://bios-ubiattach \
-        file://bios-ubiformat"
+SRC_URI += "file://obmc-flash-bios"
 
-SRCREV = "00044f4fdd179a2cfefc4b53615772f5742b6921"
+SRCREV = "ef8cd9f6777b4db0eb5fac8ec0c215d6aeb9716a"
 
 do_install_append() {
         install -d ${D}${sbindir}
-        install -m 0755 ${WORKDIR}/bios-ubiattach ${D}${sbindir}/bios-ubiattach
-        install -m 0755 ${WORKDIR}/bios-ubiformat ${D}${sbindir}/bios-ubiformat
+        install -m 0755 ${WORKDIR}/obmc-flash-bios ${D}${sbindir}/obmc-flash-bios
 }
 
 DBUS_SERVICE_${PN} += "org.open_power.Software.Host.Updater.service"
@@ -46,6 +44,10 @@ SYSTEMD_SERVICE_${PN} += " \
         obmc-flash-bios-ubiattach.service \
         obmc-flash-bios-ubimount@.service \
         obmc-flash-bios-ubiumount-prsv.service \
+        obmc-flash-bios-ubiumount-ro@.service \
         obmc-flash-bios-ubiumount-rw@.service \
+        obmc-flash-bios-ubipatch.service \
         obmc-flash-bios-squashfsmount@.service \
+        obmc-flash-bios-ubiremount.service \
+        obmc-flash-bios-updatesymlinks.service \
         "
