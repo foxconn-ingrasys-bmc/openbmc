@@ -19,8 +19,10 @@ VIRTUAL-RUNTIME_skeleton_workbook ?= ""
 DEPENDS += "glib-2.0 i2c-tools systemd python"
 RDEPENDS_${PN} += "python-argparse python-json python-subprocess python-compression libsystemd ${VIRTUAL-RUNTIME_skeleton_workbook}"
 #FOXCONN_BRANCH = "foxconn-openbmc-v1.0-stable"
-FOXCONN_BRANCH = "tpe-willen-hgx1"
-SRC_URI += "git://github.com/foxconn-ingrasys-bmc/skeleton;branch=${FOXCONN_BRANCH}"
+#FOXCONN_BRANCH = "tpe-willen-hgx1"
+FOXCONN_BRANCH = "tpe-willen"
+#SRC_URI += "git://github.com/foxconn-ingrasys-bmc/skeleton;branch=${FOXCONN_BRANCH}"
+SRC_URI += "git://github.com/willenlee/skeleton;branch=${FOXCONN_BRANCH}"
 
 FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/*"
 
@@ -29,7 +31,9 @@ PACKAGECONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'openpower-pflash', 
 PACKAGECONFIG[openpower-pflash] = ",,,pflash"
 
 #SRCREV = "e2e709c8794bdb18628df5f0e65a5a475a7ebd2d"
-SRCREV = "12b20b463fb6b4eef2209e9e683d132b383d13a9"
+#SRCREV = "12b20b463fb6b4eef2209e9e683d132b383d13a9"
+SRCREV = "47840dcd3b32a9823aa48650d2f33b1d15a314a4"
+
 S = "${WORKDIR}"
 
 # needed to invoke setuptools
@@ -49,3 +53,4 @@ do_install() {
                 DESTDIR=${D} \
                 PREFIX=/usr
 }
+
