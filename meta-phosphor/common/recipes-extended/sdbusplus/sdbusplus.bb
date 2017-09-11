@@ -32,7 +32,7 @@ DEPENDS_append_class-native = " \
         "
 SRC_URI += "git://github.com/foxconn-bmc-ks/sdbusplus;protocol=git;branch=${FOXCONN_BRANCH}"
 
-SRCREV = "99870ca7e236e388f65c4398525ba76494d6caf7"
+SRCREV = "884b05ef956c648bab966b08a1ef61d37a40661c"
 
 PACKAGECONFIG ??= "libsdbusplus transaction"
 PACKAGECONFIG[libsdbusplus] = "--enable-libsdbusplus,--disable-libsdbusplus,systemd,libsystemd"
