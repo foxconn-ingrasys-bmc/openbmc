@@ -4,6 +4,6 @@ HOMEPAGE = "https://github.com/foxconn-ingrasys-bmc/skeleton"
 PR = "r1"
 
 #SRCREV = "e2e709c8794bdb18628df5f0e65a5a475a7ebd2d"
-SRCREV = "12b20b463fb6b4eef2209e9e683d132b383d13a9"
+SRCREV = "9fa9ac9c7e1b8bd38c552a09c3c59e4cd165c40a"
 inherit config-in-skeleton
 inherit obmc-phosphor-license
