@@ -18,6 +18,9 @@ ZAIUS_OCCS = " \
 ZAIUS_OCCSFMT = "gpio-fsi/cfam@0,0/{0}.conf"
 ZAIUS_OCCITEMS = "${@compose_list(d, 'ZAIUS_OCCSFMT', 'ZAIUS_OCCS')}"
 
+ITEMS = "iio-hwmon.conf"
+
 ENVS = "obmc/hwmon/{0}"
 SYSTEMD_ENVIRONMENT_FILE_${PN} += "${@compose_list(d, 'ENVS', 'ZAIUS_ITEMS')}"
 SYSTEMD_ENVIRONMENT_FILE_${PN} += "${@compose_list(d, 'ENVS', 'ZAIUS_OCCITEMS')}"
+SYSTEMD_ENVIRONMENT_FILE_${PN} += " ${@compose_list(d, 'ENVS', 'ITEMS')}"
