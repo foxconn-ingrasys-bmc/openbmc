@@ -37,7 +37,6 @@ ucd_set()
 
 vcs_set_gpios()
 {
-    if [ -n "$ucd" ]; then unbind_ucd; fi
     echo -e "\tSetting UCD GPIO 5 to $1"
     ucd_set 0xFA 5
     ucd_set 0xFB $1
@@ -46,13 +45,11 @@ vcs_set_gpios()
     ucd_set 0xFA 6
     ucd_set 0xFB $1
     ucd_set 0xFB $1
-    if [ -n "$ucd" ]; then rebind_ucd; fi
 }
 
 vcs_get()
 {
     echo Reading VCS settings
-    if [ -n "$ucd" ]; then unbind_ucd; fi
     ucd_set 0xFA 5
     ucd_get 0xFB
     local val=`echo $ucd_reg | grep -i -c 0x0f`
@@ -61,7 +58,6 @@ vcs_get()
     ucd_get 0xFB
     local val=`echo $ucd_reg | grep -i -c 0x0f`
     echo -e "\tUCD GPIO 6 state=$val"
-    if [ -n "$ucd" ]; then rebind_ucd; fi
 }
 
 
