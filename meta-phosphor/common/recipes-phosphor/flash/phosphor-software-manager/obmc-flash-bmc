@@ -1,5 +1,26 @@
 #!/bin/sh
 
+# Get the root mtd device number (mtdX) from "/dev/ubiblockX_Y on /"
+findrootmtd() {
+  rootmatch=" on / "
+  m="$(mount | grep "${rootmatch}" | grep "ubiblock")"
+  m="${m##*ubiblock}"
+  m="${m%_*}"
+  if [ -z "${m}" ]; then
+    # default to bmc mtd (0)
+    m=0
+  fi
+  echo "mtd${m}"
+}
+
+findrootubi() {
+  rootmatch=" on / "
+  m="$(mount | grep "${rootmatch}")"
+  m="${m##*ubiblock}"
+  m="${m% on*}"
+  echo "ubi${m}"
+}
+
 # Get the mtd device number (mtdX)
 findmtd() {
   m="$(grep -xl "$1" /sys/class/mtd/*/name)"
@@ -16,13 +37,53 @@ findubi() {
   echo "${u}"
 }
 
+# Get all ubi devices on a specific mtd that match requested string
+findubi_onmtd() {
+  u="$(grep -h "$1" /sys/class/ubi/ubi"$2"/subsystem/ubi"$2"*/name)"
+  u="${u%/name}"
+  u="${u##*/}"
+  echo "${u}"
+}
+
+# Make space on flash before creating new volumes. This can be enhanced
+# determine current flash usage. For now only keep a "keepmax" number of them
+ubi_remove_volumes()
+{
+  kernelname="$(fw_printenv -n kernelname)"
+  curversion="${kernelname##*-}"
+  rootubi="$(findrootubi)"
+
+  # Just keep max number of volumes before updating, don't delete the version
+  # the BMC is booted from, and when a version is identified to be deleted,
+  # delete both the rofs and kernel volumes for that version.
+  rmnames="$(findubi_onmtd "${name%-*}-" "${ro}")"
+  rmnames=(${rmnames})
+  ubicount="${#rmnames[@]}"
+  while [ ${ubicount} -ge ${keepmax} ]; do
+    # Loop through existing volumes and skip currently active ones
+    for (( index=0; index<${#rmnames[@]}; index++ )); do
+      rmname="${rmnames[${index}]}"
+      rmversion="${rmname##*-}"
+      rmubi="$(findubi "rofs-${rmversion}")"
+      if [[ ( "${rmubi}" != "${rootubi}" ) &&
+            ( "${rmname}" != "${kernelname}" ) ]]; then
+        ubi_remove "rofs-${rmversion}"
+        ubi_remove "kernel-${rmversion}"
+        break
+      fi
+    done
+    # Decrease count regardless to avoid an infinite loop
+    (( ubicount-- ))
+  done
+}
+
 ubi_rw() {
   rwmtd="$(findmtd "${reqmtd}")"
   rw="${rwmtd#mtd}"
   ubidev="/dev/ubi${rw}"
 
-  if [ "$(fw_printenv rwreset)" == "rwreset=true" ]; then
-    ubi_remove
+  if [ "$(fw_printenv rwreset 2>/dev/null)" == "rwreset=true" ]; then
+    ubi_remove "${name}"
     fw_setenv rwreset
   fi
 
@@ -34,9 +95,22 @@ ubi_rw() {
 }
 
 ubi_ro() {
+  keepmax=2 # Default 2 volumes per mtd
   romtd="$(findmtd "${reqmtd}")"
+  romtd2="$(findmtd "${reqmtd2}")"
+
+  if [ ! "${romtd}" == "${romtd2}" ]; then
+    # Request to use alternate mtd device, choose the non-root one
+    keepmax=1 # 1 volume on each of the requested mtds
+    rootmtd="$(findrootmtd)"
+    if [ "${rootmtd}" == "${romtd}" ]; then
+      romtd="${romtd2}"
+    fi
+  fi
   ro="${romtd#mtd}"
   ubidev="/dev/ubi${ro}"
+
+  ubi_remove_volumes
 
   # Create a static ubi volume
   # TODO Get the actual image size openbmc/openbmc#1840
@@ -54,6 +128,10 @@ ubi_block() {
   block="/dev/ubiblock${ubidevid}"
   if [ ! -e "$block" ]; then
     ubiblock --create "/dev/ubi${ubidevid}"
+    if [ $? != 0 ]; then
+      echo "Unable to create ubiblock ${name}:${ubidevid}"
+      return 1
+    fi
   fi
 }
 
@@ -62,34 +140,33 @@ ubi_updatevol() {
   ubidevid="${vol#ubi}"
   img="/tmp/images/${version}/${imgfile}"
   ubiupdatevol "/dev/ubi${ubidevid}" "${img}"
+  if [ $? != 0 ]; then
+    echo "Unable to update volume ${name}!"
+    return 1
+  fi
 }
 
 ubi_remove() {
-    vol="$(findubi "${name}")"
+    rmname="$1"
+    vol="$(findubi "${rmname}")"
 
     if [ ! -z "$vol" ]; then
         vol="${vol%_*}"
 
-        if grep -q "${vol}:$name" /proc/mounts; then
-            mountdir=$(grep "${vol}:$name" /proc/mounts | cut -d " " -f 2)
+        if grep -q "$rmname" /proc/mounts; then
+            mountdir=$(grep "$rmname" /proc/mounts | cut -d " " -f 2)
             umount "$mountdir"
             rm -r "$mountdir"
         fi
 
-        ubirmvol "/dev/${vol}" -N "$name"
+        ubirmvol "/dev/${vol}" -N "$rmname"
     fi
 }
 
 remount_ubi() {
-  # Get a list of all devices formatted as UBI
-  for file in /dev/mtd*; do
-    if [[ $(hexdump -C -n 3 $file) =~ "UBI" ]]; then
-      mtd="${file: -1}"
-      if [[ $mtd =~ ^-?[0-9]+$ ]]; then
-        mtds=${mtd},${mtds}
-      fi
-    fi
-  done
+  bmcmtd="$(findmtd "bmc")"
+  altbmcmtd="$(findmtd "alt-bmc")"
+  mtds="${bmcmtd: -1}","${altbmcmtd: -1}"
 
   IFS=',' read -r -a mtds <<< "$mtds"
   mtds=($(echo "${mtds[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
@@ -107,7 +184,7 @@ remount_ubi() {
       name="${name%Character*}"
       name="$(echo -e "${name}" | tr -d '[:space:]')"
 
-      if [[ ${name} == ro-* ]]; then
+      if [[ ${name} == rofs-* ]]; then
         mountdir="/media/${name}"
         mkdir -p "${mountdir}"
         ubiblock --create /dev/ubi${mtd}_${element} &> /dev/null
@@ -117,30 +194,77 @@ remount_ubi() {
   done
 }
 
+# Read the current env variable and set it on the alternate boot env
+copy_env_var_to_alt() {
+  varName=$1
+  value="$(fw_printenv -n "${varName}")"
+  fw_setenv -c /etc/alt_fw_env.config "${varName}" "${value}"
+}
+
 ubi_setenv() {
-    varName="${variable%"\x3d"*}"
-    value="${variable##*"\x3d"}"
-    fw_setenv "$varName" "$value"
+    variable=$1
+    if [[ "$variable" == *"="* ]]; then
+        varName="${variable%=*}"
+        value="${variable##*=}"
+        fw_setenv "$varName" "$value"
+    else
+        fw_setenv "$variable"
+    fi
+}
+
+mtd_write() {
+  flashmtd="$(findmtd "${reqmtd}")"
+  img="/tmp/images/${version}/${imgfile}"
+  flashcp -v ${img} /dev/${flashmtd}
+}
+
+backup_env_vars() {
+  copy_env_var_to_alt kernelname
+  copy_env_var_to_alt ubiblock
+  copy_env_var_to_alt root
+}
+
+update_env_vars() {
+  vol="$(findubi rofs-"${version}")"
+  if [ -z "${vol}" ]; then
+    return 1
+  fi
+  ubidevid="${vol#ubi}"
+  block="/dev/ubiblock${ubidevid}"
+  if [ ! -e "${block}" ]; then
+    return 1
+  fi
+  ubi_setenv "kernelname=kernel-${version}"
+  ubi_setenv "ubiblock=$(echo "${ubidevid}" | sed 's/_/,/')"
+  ubi_setenv "root=${block}"
 }
 
 case "$1" in
+  mtduboot)
+    reqmtd="$2"
+    version="$3"
+    imgfile="image-u-boot"
+    mtd_write
+    ;;
   ubirw)
     reqmtd="$2"
     name="$3"
     ubi_rw
     ;;
   ubiro)
-    reqmtd="$2"
+    reqmtd="$(echo "$2" | cut -d "+" -f 1)"
+    reqmtd2="$(echo "$2" | cut -d "+" -f 2)"
     name="$3"
     version="$4"
     imgfile="image-rofs"
     imgsize="16MiB"
     ubi_ro
-    ubi_block
     ubi_updatevol
+    ubi_block
     ;;
   ubikernel)
-    reqmtd="$2"
+    reqmtd="$(echo "$2" | cut -d "+" -f 1)"
+    reqmtd2="$(echo "$2" | cut -d "+" -f 2)"
     name="$3"
     version="$4"
     imgfile="image-kernel"
@@ -150,14 +274,20 @@ case "$1" in
     ;;
   ubiremove)
     name="$2"
-    ubi_remove
+    ubi_remove "${name}"
     ;;
   ubisetenv)
-    variable="$2"
-    ubi_setenv
+    ubi_setenv "$2"
     ;;
   ubiremount)
     remount_ubi
+    ;;
+  preupdate)
+    backup_env_vars
+    ;;
+  postupdate)
+    version="$2"
+    update_env_vars
     ;;
   *)
     echo "Invalid argument"

@@ -1,8 +1,13 @@
 [Unit]
-Description=Create read-only ubi volumes %I
+Description=Store read-only images %I to BMC storage
+OnFailure=obmc-flash-bmc-ubiro-remove@%i.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=no
-ExecStart={sbindir}/obmc-flash-bmc ubiro {RO_MTD} ro-%i %i
-ExecStart={sbindir}/obmc-flash-bmc ubikernel {KERNEL_MTD} kernel-%i %i
+ExecStartPre=/usr/bin/env obmc-flash-bmc preupdate
+ExecStart=/usr/bin/env obmc-flash-bmc ubiro {RO_MTD} rofs-%i %i
+ExecStart=/usr/bin/env obmc-flash-bmc ubikernel {KERNEL_MTD} kernel-%i %i
+ExecStart=/usr/bin/env obmc-flash-bmc mtduboot u-boot %i
+ExecStartPost=/usr/bin/env obmc-flash-bmc postupdate %i
+SyslogIdentifier=obmc-flash-bmc

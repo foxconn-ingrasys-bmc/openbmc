@@ -30,7 +30,7 @@ PACKAGE_BEFORE_PN = "${PN}-test"
 FILES_${PN}-test = "${bindir}/*-test"
 
 SRC_URI += "git://github.com/openbmc/phosphor-logging"
-SRCREV = "7656fba39d7bef754ee38a1d9a7889e7d3309db4"
+SRCREV = "05aae8bc28cd81cdfea29eaa3cdb89b817b03faf"
 
 S = "${WORKDIR}/git"
 

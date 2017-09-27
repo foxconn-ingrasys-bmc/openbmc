@@ -9,7 +9,12 @@ FOXCONN_BRANCH = "foxconn-g2"
 inherit autotools pkgconfig
 inherit obmc-phosphor-python-autotools
 
-DEPENDS += "autoconf-archive-native"
+DEPENDS += " \
+        autoconf-archive-native \
+        python-inflection-native \
+        python-mako-native \
+        python-pyyaml-native \
+        "
 RDEPENDS_sdbus++ += " \
         python-inflection \
         python-mako \

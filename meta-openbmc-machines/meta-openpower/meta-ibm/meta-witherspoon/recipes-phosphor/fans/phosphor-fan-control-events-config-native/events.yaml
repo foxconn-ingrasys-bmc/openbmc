@@ -19,6 +19,102 @@ groups:
       type: /xyz/openbmc_project/sensors
       members:
           - /temperature/ambient
+    - name: occ0_object
+      description: Dbus object containing OCC0 properties
+      type: /org/open_power/control
+      members:
+          - /occ0
+    - name: occ1_object
+      description: Dbus object containing OCC1 properties
+      type: /org/open_power/control
+      members:
+          - /occ1
+    - name: zone0_cores
+      description: Group of core temperature sensors for zone 0
+      type: /xyz/openbmc_project/sensors
+      members:
+          - /temperature/p0_core0_temp
+          - /temperature/p0_core1_temp
+          - /temperature/p0_core2_temp
+          - /temperature/p0_core3_temp
+          - /temperature/p0_core4_temp
+          - /temperature/p0_core5_temp
+          - /temperature/p0_core6_temp
+          - /temperature/p0_core7_temp
+          - /temperature/p0_core8_temp
+          - /temperature/p0_core9_temp
+          - /temperature/p0_core10_temp
+          - /temperature/p0_core11_temp
+          - /temperature/p0_core12_temp
+          - /temperature/p0_core13_temp
+          - /temperature/p0_core14_temp
+          - /temperature/p0_core15_temp
+          - /temperature/p0_core16_temp
+          - /temperature/p0_core17_temp
+          - /temperature/p0_core18_temp
+          - /temperature/p0_core19_temp
+          - /temperature/p0_core20_temp
+          - /temperature/p0_core21_temp
+          - /temperature/p0_core22_temp
+          - /temperature/p0_core23_temp
+          - /temperature/p1_core0_temp
+          - /temperature/p1_core1_temp
+          - /temperature/p1_core2_temp
+          - /temperature/p1_core3_temp
+          - /temperature/p1_core4_temp
+          - /temperature/p1_core5_temp
+          - /temperature/p1_core6_temp
+          - /temperature/p1_core7_temp
+          - /temperature/p1_core8_temp
+          - /temperature/p1_core9_temp
+          - /temperature/p1_core10_temp
+          - /temperature/p1_core11_temp
+          - /temperature/p1_core12_temp
+          - /temperature/p1_core13_temp
+          - /temperature/p1_core14_temp
+          - /temperature/p1_core15_temp
+          - /temperature/p1_core16_temp
+          - /temperature/p1_core17_temp
+          - /temperature/p1_core18_temp
+          - /temperature/p1_core19_temp
+          - /temperature/p1_core20_temp
+          - /temperature/p1_core21_temp
+          - /temperature/p1_core22_temp
+          - /temperature/p1_core23_temp
+    - name: zone0_regulators
+      description: Group of regulator temperature sensors for zone 0
+      type: /xyz/openbmc_project/sensors
+      members:
+          - /temperature/p0_vdd_temp
+          - /temperature/p1_vdd_temp
+    - name: zone0_dimms
+      description: Group of dimm temperature sensors for zone 0
+      type: /xyz/openbmc_project/sensors
+      members:
+          - /temperature/dimm0_temp
+          - /temperature/dimm1_temp
+          - /temperature/dimm2_temp
+          - /temperature/dimm3_temp
+          - /temperature/dimm4_temp
+          - /temperature/dimm5_temp
+          - /temperature/dimm6_temp
+          - /temperature/dimm7_temp
+          - /temperature/dimm8_temp
+          - /temperature/dimm9_temp
+          - /temperature/dimm10_temp
+          - /temperature/dimm11_temp
+          - /temperature/dimm12_temp
+          - /temperature/dimm13_temp
+          - /temperature/dimm14_temp
+          - /temperature/dimm15_temp
+
+preconditions:
+    - name: property_states_match
+      description: >
+          All defined properties must match the values given to
+          enable a set speed event otherwise fan speeds are set to full
+      parameters:
+          - groups
 
 actions:
     - name: count_state_before_speed
@@ -35,6 +131,24 @@ actions:
       description: Set ceiling speed based on key transition values with average
       parameters:
           - map
+    - name: set_net_increase_speed
+      description: >
+          Set the speed increase delta based on a factor applied to
+          the delta increase size times the given value and property's
+          value difference
+      parameters:
+          - property
+          - factor
+          - delta
+    - name: set_net_decrease_speed
+      description: >
+          Set the speed decrease delta based on a factor applied to
+          the delta decrease size times the given value and property's
+          value difference
+      parameters:
+          - property
+          - factor
+          - delta
 
 events:
     - name: missing_before_high_speed_air
@@ -119,10 +233,10 @@ events:
           name: set_floor_from_average_sensor_value
           map:
               value:
-                  - 27000: 3500
-                  - 32000: 4600
-                  - 37000: 5200
-                  - 40000: 5800
+                  - 27000: 10500
+                  - 32000: 10500
+                  - 37000: 10500
+                  - 40000: 10500
               type: std::map<int64_t, uint64_t>
     - name: update_water_cooled_floor_speed_based_on_ambient
       zone_conditions:
@@ -138,10 +252,10 @@ events:
           name: set_floor_from_average_sensor_value
           map:
               value:
-                  - 27000: 3000
-                  - 32000: 4300
-                  - 37000: 5000
-                  - 40000: 5800
+                  - 27000: 10500
+                  - 32000: 10500
+                  - 37000: 10500
+                  - 40000: 10500
               type: std::map<int64_t, uint64_t>
     - name: update_ceiling_speed_based_on_ambient
       zone_conditions:
@@ -160,6 +274,198 @@ events:
           name: set_ceiling_from_average_sensor_value
           map:
               value:
-                  - 25000: 7200
+                  - 25000: 10500
                   - 27000: 10500
               type: std::map<int64_t, uint64_t>
+    - name: speed_increase_changes_based_on_core_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+      precondition:
+          name: property_states_match
+          groups:
+              - name: occ0_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+              - name: occ1_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+      group: zone0_cores
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_increase_speed
+          property: 73000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 400
+              type: uint64_t
+    - name: speed_decrease_changes_based_on_core_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+      precondition:
+          name: property_states_match
+          groups:
+              - name: occ0_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+              - name: occ1_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+      group: zone0_cores
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_decrease_speed
+          property: 70000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 10
+              type: uint64_t
+      timer:
+          interval: 15
+    - name: speed_increase_changes_based_on_regulator_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+          - name: water_and_air_cooled_chassis
+            zones:
+                - 0
+      group: zone0_regulators
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_increase_speed
+          property: 85000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 400
+              type: uint64_t
+    - name: speed_decrease_changes_based_on_regulator_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+          - name: water_and_air_cooled_chassis
+            zones:
+                - 0
+      group: zone0_regulators
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_decrease_speed
+          property: 82000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 10
+              type: uint64_t
+      timer:
+          interval: 15
+    - name: speed_increase_changes_based_on_dimm_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+          - name: water_and_air_cooled_chassis
+            zones:
+                - 0
+      precondition:
+          name: property_states_match
+          groups:
+              - name: occ0_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+              - name: occ1_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+      group: zone0_dimms
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_increase_speed
+          property: 74000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 200
+              type: uint64_t
+    - name: speed_decrease_changes_based_on_dimm_temps
+      zone_conditions:
+          - name: air_cooled_chassis
+            zones:
+                - 0
+          - name: water_and_air_cooled_chassis
+            zones:
+                - 0
+      precondition:
+          name: property_states_match
+          groups:
+              - name: occ0_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+              - name: occ1_object
+                interface: org.open_power.OCC.Status
+                property:
+                    name: OccActive
+                    type: bool
+                    value: true
+      group: zone0_dimms
+      interface: xyz.openbmc_project.Sensor.Value
+      property:
+          name: Value
+          type: int64_t
+      action:
+          name: set_net_decrease_speed
+          property: 71000
+          factor:
+              value: 1000
+              type: int64_t
+          delta:
+              value: 10
+              type: uint64_t
+      timer:
+          interval: 15

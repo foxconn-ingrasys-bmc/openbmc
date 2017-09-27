@@ -13,7 +13,7 @@ RDEPENDS_${PN} += " \
 S = "${WORKDIR}/git"
 SRC_URI += "git://github.com/openbmc/phosphor-debug-collector"
 
-SRCREV = "ff0699dd834984e806e00dcc586ffb01bcd85a70"
+SRCREV = "d0f0064eb989a93e241c599641654f12141ef636"
 
 do_install() {
        install -d ${D}${bindir}

@@ -60,6 +60,7 @@ FILES_${PN}-download-mgr += "${sbindir}/phosphor-download-manager"
 FILES_${PN}-updater += " \
     ${sbindir}/phosphor-image-updater \
     ${sbindir}/obmc-flash-bmc \
+    /usr/local \
     "
 DBUS_SERVICE_${PN}-version += "xyz.openbmc_project.Software.Version.service"
 DBUS_SERVICE_${PN}-download-mgr += "xyz.openbmc_project.Software.Download.service"
@@ -76,11 +77,9 @@ SYSTEMD_SERVICE_${PN}-updater += " \
     "
 
 # Name of the mtd device where the ubi volumes should be created
-BMC_RW_MTD ??= "pnor"
-BMC_RO_MTD ??= "pnor"
-# TODO Change kernel location to primary BMC chip once the rofs/rwfs mtd devices
-# are merged into a single ubi one openbmc/openbmc#1942
-BMC_KERNEL_MTD ??= "pnor"
+BMC_RW_MTD ??= "bmc"
+BMC_RO_MTD ??= "bmc"
+BMC_KERNEL_MTD ??= "bmc"
 SYSTEMD_SUBSTITUTIONS += "RW_MTD:${BMC_RW_MTD}:obmc-flash-bmc-ubirw.service"
 SYSTEMD_SUBSTITUTIONS += "RO_MTD:${BMC_RO_MTD}:obmc-flash-bmc-ubiro@.service"
 SYSTEMD_SUBSTITUTIONS += "KERNEL_MTD:${BMC_KERNEL_MTD}:obmc-flash-bmc-ubiro@.service"
@@ -89,9 +88,10 @@ SRC_URI += "file://obmc-flash-bmc"
 do_install_append() {
     install -d ${D}${sbindir}
     install -m 0755 ${WORKDIR}/obmc-flash-bmc ${D}${sbindir}/obmc-flash-bmc
+    install -d ${D}/usr/local
 }
 
 SRC_URI += "git://github.com/openbmc/phosphor-bmc-code-mgmt"
-SRCREV = "b1cfdf99c4b9cccccb21f34150d962004dfa4fef"
+SRCREV = "43b25cde98b632690990ee3a120be5beff1f21da"
 
 S = "${WORKDIR}/git"
