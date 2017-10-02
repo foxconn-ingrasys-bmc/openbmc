@@ -29,7 +29,7 @@ PACKAGECONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'openpower-pflash', 
 PACKAGECONFIG[openpower-pflash] = ",,,pflash"
 
 #SRCREV = "e2e709c8794bdb18628df5f0e65a5a475a7ebd2d"
-SRCREV = "130fe04eba05608cb25e878e3a534781e118a69c"
+SRCREV = "ec80b445f89e1c735951936f3267b4351a8d1eb9"
 S = "${WORKDIR}"
 
 # needed to invoke setuptools
