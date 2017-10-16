@@ -1,6 +1,6 @@
 LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
 
-SRCREV = "f823c0114c14f635af84af7c1b283e3dfdd6f579"
+SRCREV = "3ae752b3884f8a486342f63c472f8179611dd379"
 UBRANCH = "foxconn-v2016.07-aspeed-openbmc-g2"
 SRC_URI = "git://git@github.com/foxconn-bmc-ks/u-boot.git;branch=${UBRANCH};protocol=https"
 
