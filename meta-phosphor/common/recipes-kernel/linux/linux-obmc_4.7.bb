@@ -1,7 +1,6 @@
 #KBRANCH ?= "foxconn-sthelens-4.7"
 KBRANCH ?= "foxconn-hgx1-4.7"
 LINUX_VERSION ?= "4.7"
-#SRCREV="ad6f155e7b922d3f278337d7618dd88b2dc6e6f3"
-SRCREV="6faa31f9efbb8e36c6c7819f9f9c674c2d2f7e2d"
+SRCREV="6a29142d72fe5f163eb74d82d0211da1446fe8aa"
 
 require common/recipes-kernel/linux/linux-obmc.inc
