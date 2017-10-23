@@ -5,7 +5,7 @@ SECTION = "bootloader"
 
 DEPENDS = "openssl"
 
-SRCREV = "88760d71a256e49c40696bd2a74b0af5f3e27979"
+SRCREV = "79273c7051cf6352a7e4a122861ed2ca0a688f6f"
 UBRANCH = "foxconn-hgx1-v2016.07"
 SRC_URI = "git://git@github.com/foxconn-ingrasys-bmc/u-boot.git;branch=${UBRANCH};protocol=https"
 
