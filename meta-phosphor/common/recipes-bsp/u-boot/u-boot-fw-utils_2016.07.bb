@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
 SECTION = "bootloader"
 DEPENDS = "mtd-utils"
 
-SRCREV = "79273c7051cf6352a7e4a122861ed2ca0a688f6f"
+SRCREV = "13b6397c91c6d5c07058b54e2522d98b993e353c"
 UBRANCH = "foxconn-hgx1-v2016.07"
 SRC_URI = "git://git@github.com/foxconn-ingrasys-bmc/u-boot.git;branch=${UBRANCH};protocol=https"
 
