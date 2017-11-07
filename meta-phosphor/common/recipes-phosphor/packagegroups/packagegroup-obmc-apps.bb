@@ -21,6 +21,7 @@ PACKAGES = " \
         ${PN}-debug-collector \
         ${PN}-settings \
         ${PN}-network \
+        ${PN}-user-mgmt \
         "
 
 SUMMARY_${PN}-bmc-state-mgmt = "BMC state management"
@@ -93,6 +94,7 @@ RDEPENDS_${PN}-debug-collector = " \
         ${VIRTUAL-RUNTIME_obmc-dump-manager} \
         ${VIRTUAL-RUNTIME_obmc-dump-monitor} \
         phosphor-debug-collector-dreport \
+        phosphor-debug-collector-scripts \
         "
 
 SUMMARY_${PN}-settings = "Settings applications"
@@ -103,4 +105,9 @@ RDEPENDS_${PN}-settings = " \
 SUMMARY_${PN}-network = "BMC Network Manager"
 RDEPENDS_${PN}-network = " \
         ${VIRTUAL-RUNTIME_obmc-network-manager} \
+        "
+
+SUMMARY_${PN}-user-mgmt = "User management applications"
+RDEPENDS_${PN}-user-mgmt = " \
+        ${VIRTUAL-RUNTIME_obmc-user-mgmt} \
         "

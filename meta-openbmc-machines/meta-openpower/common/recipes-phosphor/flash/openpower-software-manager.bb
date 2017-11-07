@@ -33,7 +33,7 @@ SRC_URI += "git://github.com/openbmc/openpower-pnor-code-mgmt"
 
 SRC_URI += "file://obmc-flash-bios"
 
-SRCREV = "3588acc8b011f7f39e19ddf77daf5b4e512a37da"
+SRCREV = "29414359f4e446c36afb502927c5858ba627b7a2"
 
 do_install_append() {
         install -d ${D}${sbindir}
@@ -45,10 +45,11 @@ DBUS_SERVICE_${PN} += "org.open_power.Software.Host.Updater.service"
 SYSTEMD_SERVICE_${PN} += " \
         obmc-flash-bios-ubiattach.service \
         obmc-flash-bios-ubimount@.service \
-        obmc-flash-bios-ubiumount-prsv.service \
         obmc-flash-bios-ubiumount-ro@.service \
         obmc-flash-bios-ubiumount-rw@.service \
         obmc-flash-bios-ubipatch.service \
         obmc-flash-bios-ubiremount.service \
         obmc-flash-bios-updatesymlinks.service \
+        obmc-flash-bios-ubiclear@.service \
+        obmc-flash-bios-cleanup.service \
         "

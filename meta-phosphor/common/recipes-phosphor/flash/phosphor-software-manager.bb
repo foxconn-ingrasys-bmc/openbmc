@@ -74,6 +74,11 @@ SYSTEMD_SERVICE_${PN}-updater += " \
     obmc-flash-bmc-ubiro-remove@.service \
     usr-local.mount \
     obmc-flash-bmc-ubiremount.service \
+    obmc-flash-bmc-updateubootvars@.service \
+    reboot-guard-enable.service \
+    reboot-guard-disable.service \
+    obmc-flash-bmc-cleanup.service \
+    obmc-flash-bmc-reset.service \
     "
 
 # Name of the mtd device where the ubi volumes should be created
@@ -92,6 +97,6 @@ do_install_append() {
 }
 
 SRC_URI += "git://github.com/openbmc/phosphor-bmc-code-mgmt"
-SRCREV = "43b25cde98b632690990ee3a120be5beff1f21da"
+SRCREV = "7a248bc7c30ed1fdb7d6b4255eea2430852333d1"
 
 S = "${WORKDIR}/git"

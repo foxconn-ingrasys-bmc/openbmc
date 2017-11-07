@@ -57,6 +57,8 @@ mount_squashfs() {
   ubidev="/dev/ubi${pnormtd#mtd}"
   mountdir="/media/${name}"
   vol="$(findubi "${name}")"
+  img="/tmp/images/${version}/pnor.xz.squashfs"
+  filesize="$(ls -sh $img | awk -F " " {'print $1'})"
 
   if is_mounted "${name}"; then
     echo "${name} is already mounted."
@@ -71,10 +73,8 @@ mount_squashfs() {
     mkdir "${mountdir}"
   fi
 
-  # Create a static ubi volume of arbitrary size 24MB,
-  # the current pnor image is ~19MB
-  # TODO Set size based on file size openbmc/openbmc#1840
-  ubimkvol "${ubidev}" -N "${name}" -s 24MiB --type=static
+  # Set size of read-only partition equal to pnor.xz.squashfs
+  ubimkvol "${ubidev}" -N "${name}" -s "${filesize}"KiB --type=static
   vol="$(findubi "${name}")"
 
   if [ $? != 0 ]; then
@@ -83,7 +83,6 @@ mount_squashfs() {
   fi
 
   ubidevid="${vol#ubi}"
-  img="/tmp/images/${version}/pnor.xz.squashfs"
   ubiupdatevol "/dev/ubi${ubidevid}" "${img}"
 
   if [ $? != 0 ]; then
@@ -213,6 +212,7 @@ update_symlinks() {
   PNOR_PRSV_ACTIVE_PATH="/var/lib/phosphor-software-manager/pnor/prsv"
   PNOR_PRSV="/media/pnor-prsv"
   PERSISTENCE_PATH="/var/lib/obmc/openpower-pnor-code-mgmt/"
+  PNOR_PATCH_LOCATION="/usr/local/share/pnor/"
 
   # Get a list of all active PNOR versions
   data="$(ls -d ${PNOR_RO_PREFIX}*)"
@@ -248,6 +248,7 @@ update_symlinks() {
   # lowest priority, then remove the symlink and create new ones.
   if [[ $(readlink -f "${PNOR_RO_ACTIVE_PATH}") != ${PNOR_RO_PREFIX}${currentVersion}  ]]; then
     rm -f ${PNOR_RO_ACTIVE_PATH}
+    rm -rf ${PNOR_PATCH_LOCATION}*
     ln -sfv ${PNOR_RO_PREFIX}${currentVersion} ${PNOR_RO_ACTIVE_PATH}
   fi
 
@@ -259,6 +260,34 @@ update_symlinks() {
   if [[ ! -h ${PNOR_PRSV_ACTIVE_PATH}  ]]; then
     ln -sfv ${PNOR_PRSV} ${PNOR_PRSV_ACTIVE_PATH}
   fi
+}
+
+clear_ubi() {
+  mountdir="/media/${name}"
+  if is_mounted "${name}"; then
+    rm -rf $mountdir/..?* $mountdir/.[!.]* $mountdir/*
+  fi
+}
+
+ubi_cleanup() {
+    # When ubi_cleanup is run, it expects one or no active version.
+    activeVersion=$(busctl --list --no-pager tree \
+            org.open_power.Software.Host.Updater | \
+            grep /xyz/openbmc_project/software/ | tail -c 9)
+
+    if [[ -z "$activeVersion" ]]; then
+        vols=$(ubinfo -a | grep -e "pnor-ro-" -e "pnor-rw-" | cut -c 14-)
+        vols=(${vols})
+    else
+        vols=$(ubinfo -a | grep -e "pnor-ro-" -e "pnor-rw-" | \
+                grep -v "$activeVersion" | cut -c 14-)
+        vols=(${vols})
+    fi
+
+    for (( index=0; index<${#vols[@]}; index++ )); do
+         name=${vols[index]}
+         umount_ubi
+    done
 }
 
 case "$1" in
@@ -283,6 +312,13 @@ case "$1" in
     ;;
   updatesymlinks)
     update_symlinks
+    ;;
+  ubiclear)
+    name="$2"
+    clear_ubi
+    ;;
+  ubicleanup)
+    ubi_cleanup
     ;;
   *)
     echo "Invalid argument"

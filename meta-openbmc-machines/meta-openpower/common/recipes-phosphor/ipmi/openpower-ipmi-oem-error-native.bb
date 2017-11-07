@@ -6,14 +6,14 @@ inherit native
 inherit obmc-phosphor-license
 inherit phosphor-dbus-yaml
 
-PROVIDES += "openpower-debug-collector-error-native"
-require openpower-debug-collector.inc
+require openpower-ipmi-oem.inc
 
 S = "${WORKDIR}/git"
 
 do_install_append() {
-    SRC=${S}/org/open_power
-    DEST=${yaml_dir}/org/open_power
+    SRC=${S}/org/open_power/OCC
+    DEST=${yaml_dir}/org/open_power/OCC
     install -d ${DEST}
-    install ${SRC}/Host.errors.yaml ${DEST}
+    install ${SRC}/Metrics.errors.yaml ${DEST}
+    install ${SRC}/Metrics.metadata.yaml ${DEST}
 }
