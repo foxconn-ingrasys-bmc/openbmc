@@ -103,6 +103,6 @@ HOST_REBOOT_SVC_FMT = "../${HOST_REBOOT_SVC}:${HOST_REBOOT_TGTFMT}.requires/${HO
 SYSTEMD_LINK_${PN}-host += "${@compose_list_zip(d, 'HOST_REBOOT_SVC_FMT', 'OBMC_HOST_INSTANCES', 'OBMC_HOST_INSTANCES')}"
 
 SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-state-manager;protocol=git;branch=${FOXCONN_BRANCH}"
-SRCREV = "def674b81dd7622fa5f7942a2e9b2de55d3f0a44"
+SRCREV = "2891703c73f8bf8a0058b648bb2350bce1e39834"
 
 S = "${WORKDIR}/git"
