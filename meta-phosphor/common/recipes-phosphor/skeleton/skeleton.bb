@@ -28,7 +28,7 @@ FILES_${PN} += "${PYTHON_SITEPACKAGES_DIR}/*"
 PACKAGECONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'openpower-pflash', 'openpower-pflash', '', d)}"
 PACKAGECONFIG[openpower-pflash] = ",,,pflash"
 
-SRCREV = "58b84e791187fd20207b08278f5b206a7cc7c50f"
+SRCREV = "d05eb49d9582b772efeae5a94a7f0356f4b93349"
 S = "${WORKDIR}"
 
 # needed to invoke setuptools
