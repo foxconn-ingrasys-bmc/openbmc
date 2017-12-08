@@ -37,7 +37,7 @@ SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-hwmon;branch=${FOXCONN_BRAN
 SRC_URI += "file://70-hwmon.rules"
 SRC_URI += "file://70-iio.rules"
 
-SRCREV = "7cb073233a4ad4a156d19159c05a4b1b8a9b6c9d"
+SRCREV = "f2dc6100fc439fa0da825ce2c81aa1834a97effc"
 
 S = "${WORKDIR}/git"
 

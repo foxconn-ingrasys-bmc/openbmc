@@ -33,8 +33,9 @@ FILES_${PN}-test = "${bindir}/*-test"
 PACKAGE_BEFORE_PN += "${PN}-elog"
 FILES_${PN}-elog += "${elog_dir}"
 
-SRC_URI += "git://github.com/openbmc/phosphor-logging"
-SRCREV = "deae3cac49b8c3312751017d36abe35e4cf7cfa1"
+FOXCONN_BRANCH="foxconn-g2"
+SRC_URI += "git://github.com/foxconn-bmc-ks/phosphor-logging;branch=${FOXCONN_BRANCH}"
+SRCREV = "7e9f33242e80f37742050682c4b62700606e486a"
 
 S = "${WORKDIR}/git"
 
