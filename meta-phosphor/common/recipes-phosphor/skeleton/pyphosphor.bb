@@ -7,9 +7,9 @@ LIC_FILES_CHKSUM = "file://${S}/LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 
 inherit allarch
 inherit setuptools
+FOXCONN_BRANCH = "foxconn-hgx1"
+SRC_URI += "git://github.com/foxconn-ingrasys-bmc/pyphosphor;branch=${FOXCONN_BRANCH}"
 
-SRC_URI += "git://github.com/openbmc/pyphosphor"
-
-SRCREV = "93aed45f230befa01c947173a908b120cfbe7017"
+SRCREV = "9fa44ad683781f82b6016ede003afc07f17c9f22"
 
 S = "${WORKDIR}/git"
