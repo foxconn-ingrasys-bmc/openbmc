@@ -42,6 +42,7 @@ RDEPENDS_${PN}-fans = " \
         obmc-control-fan \
         obmc-control-fan-algorithm \
         obmc-control-fan-cmd-tool \
+        obmc-control-i2craw-cmd-tool \
         "
 
 SUMMARY_${PN}-flash = "OpenPOWER Flash"
