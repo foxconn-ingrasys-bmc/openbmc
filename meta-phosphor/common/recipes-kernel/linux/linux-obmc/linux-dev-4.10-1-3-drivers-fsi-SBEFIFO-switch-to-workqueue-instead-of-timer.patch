@@ -1,0 +1,204 @@
+From patchwork Fri Feb  2 22:11:45 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [linux, dev-4.10,
+ 1/3] drivers: fsi: SBEFIFO: switch to workqueue instead of timer
+X-Patchwork-Submitter: Eddie James <eajames@linux.vnet.ibm.com>
+X-Patchwork-Id: 868810
+Message-Id: <1517609507-20687-2-git-send-email-eajames@linux.vnet.ibm.com>
+To: openbmc@lists.ozlabs.org
+Cc: andrew@aj.id.au, "Edward A. James" <eajames@us.ibm.com>,
+ Eddie James <eajames@linux.vnet.ibm.com>
+Date: Fri,  2 Feb 2018 16:11:45 -0600
+From: Eddie James <eajames@linux.vnet.ibm.com>
+List-Id: Development list for OpenBMC <openbmc.lists.ozlabs.org>
+
+Switch to a workqueue instead of a poll timer so that we can use a mutex
+in the work function instead of a spinlock. This allows the use of
+Jeremy's FSI scheduling fix.
+
+Signed-off-by: Edward A. James <eajames@us.ibm.com>
+---
+ drivers/fsi/fsi-sbefifo.c | 54 ++++++++++++++++++++++++++++-------------------
+ 1 file changed, 32 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/fsi/fsi-sbefifo.c b/drivers/fsi/fsi-sbefifo.c
+index 0697a10..7b6842a 100644
+--- a/drivers/fsi/fsi-sbefifo.c
++++ b/drivers/fsi/fsi-sbefifo.c
+@@ -29,9 +29,9 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+-#include <linux/timer.h>
+ #include <linux/uaccess.h>
+ #include <linux/wait.h>
++#include <linux/workqueue.h>
+ 
+ /*
+  * The SBEFIFO is a pipe-like FSI device for communicating with
+@@ -57,7 +57,7 @@
+ #define SBEFIFO_MAX_RESCHDULE	msecs_to_jiffies(5000)
+ 
+ struct sbefifo {
+-	struct timer_list poll_timer;
++	struct delayed_work work;
+ 	struct fsi_device *fsi_dev;
+ 	struct miscdevice mdev;
+ 	wait_queue_head_t wait;
+@@ -99,6 +99,8 @@ struct sbefifo_client {
+ 	unsigned long f_flags;
+ };
+ 
++static struct workqueue_struct *sbefifo_wq;
++
+ static DEFINE_IDA(sbefifo_ida);
+ 
+ static int sbefifo_inw(struct sbefifo *sbefifo, int reg, u32 *word)
+@@ -337,7 +339,7 @@ static void sbefifo_client_release(struct kref *kref)
+ 			 */
+ 			set_bit(SBEFIFO_XFR_CANCEL, &xfr->flags);
+ 			sbefifo_get(sbefifo);
+-			if (mod_timer(&client->dev->poll_timer, jiffies))
++			if (!queue_work(sbefifo_wq, &sbefifo->work.work))
+ 				sbefifo_put(sbefifo);
+ 		}
+ 	}
+@@ -374,10 +376,11 @@ static struct sbefifo_xfr *sbefifo_next_xfr(struct sbefifo *sbefifo)
+ 	return NULL;
+ }
+ 
+-static void sbefifo_poll_timer(unsigned long data)
++static void sbefifo_worker(struct work_struct *work)
+ {
+ 	static const unsigned long EOT_MASK = 0x000000ff;
+-	struct sbefifo *sbefifo = (void *)data;
++	struct delayed_work *dwork = to_delayed_work(work);
++	struct sbefifo *sbefifo = container_of(dwork, struct sbefifo, work);
+ 	struct sbefifo_buf *rbuf, *wbuf;
+ 	struct sbefifo_xfr *xfr, *tmp;
+ 	struct sbefifo_buf drain;
+@@ -393,6 +396,7 @@ static void sbefifo_poll_timer(unsigned long data)
+ 	if (!xfr)
+ 		goto out_unlock;
+ 
++again:
+ 	rbuf = xfr->rbuf;
+ 	wbuf = xfr->wbuf;
+ 
+@@ -414,9 +418,8 @@ static void sbefifo_poll_timer(unsigned long data)
+ 		devn = sbefifo_dev_nwwriteable(sts);
+ 		if (devn == 0) {
+ 			/* No open slot for write.  Reschedule. */
+-			sbefifo->poll_timer.expires = jiffies +
+-				SBEFIFO_RESCHEDULE;
+-			add_timer(&sbefifo->poll_timer);
++			queue_delayed_work(sbefifo_wq, &sbefifo->work,
++					   SBEFIFO_RESCHEDULE);
+ 			goto out_unlock;
+ 		}
+ 
+@@ -468,9 +471,8 @@ static void sbefifo_poll_timer(unsigned long data)
+ 			}
+ 
+ 			/* No data yet.  Reschedule. */
+-			sbefifo->poll_timer.expires = jiffies +
+-				SBEFIFO_RESCHEDULE;
+-			add_timer(&sbefifo->poll_timer);
++			queue_delayed_work(sbefifo_wq, &sbefifo->work,
++					   SBEFIFO_RESCHEDULE);
+ 			goto out_unlock;
+ 		} else {
+ 			xfr->wait_data_timeout = 0;
+@@ -516,10 +518,12 @@ static void sbefifo_poll_timer(unsigned long data)
+ 		}
+ 		INIT_LIST_HEAD(&sbefifo->xfrs);
+ 
+-	} else if (eot && sbefifo_next_xfr(sbefifo)) {
+-		sbefifo_get(sbefifo);
+-		sbefifo->poll_timer.expires = jiffies;
+-		add_timer(&sbefifo->poll_timer);
++	} else if (eot) {
++		xfr = sbefifo_next_xfr(sbefifo);
++		if (xfr) {
++			wake_up_interruptible(&sbefifo->wait);
++			goto again;
++		}
+ 	}
+ 
+ 	sbefifo_put(sbefifo);
+@@ -638,7 +642,7 @@ static ssize_t sbefifo_read_common(struct sbefifo_client *client,
+ 			 * Fill the read buffer back up.
+ 			 */
+ 			sbefifo_get(sbefifo);
+-			if (mod_timer(&client->dev->poll_timer, jiffies))
++			if (!queue_work(sbefifo_wq, &sbefifo->work.work))
+ 				sbefifo_put(sbefifo);
+ 		} else {
+ 			list_del(&xfr->client);
+@@ -721,7 +725,7 @@ static ssize_t sbefifo_write_common(struct sbefifo_client *client,
+ 								 &n))) {
+ 			set_bit(SBEFIFO_XFR_CANCEL, &xfr->flags);
+ 			sbefifo_get(sbefifo);
+-			if (mod_timer(&sbefifo->poll_timer, jiffies))
++			if (!queue_work(sbefifo_wq, &sbefifo->work.work))
+ 				sbefifo_put(sbefifo);
+ 
+ 			ret = -ERESTARTSYS;
+@@ -741,7 +745,8 @@ static ssize_t sbefifo_write_common(struct sbefifo_client *client,
+ 			    n)) {
+ 				set_bit(SBEFIFO_XFR_CANCEL, &xfr->flags);
+ 				sbefifo_get(sbefifo);
+-				if (mod_timer(&sbefifo->poll_timer, jiffies))
++				if (!queue_work(sbefifo_wq,
++						&sbefifo->work.work))
+ 					sbefifo_put(sbefifo);
+ 				ret = -EFAULT;
+ 				goto out;
+@@ -768,7 +773,7 @@ static ssize_t sbefifo_write_common(struct sbefifo_client *client,
+ 		 * Drain the write buffer.
+ 		 */
+ 		sbefifo_get(sbefifo);
+-		if (mod_timer(&client->dev->poll_timer, jiffies))
++		if (!queue_work(sbefifo_wq, &sbefifo->work.work))
+ 			sbefifo_put(sbefifo);
+ 	}
+ 
+@@ -928,8 +933,7 @@ static int sbefifo_probe(struct device *dev)
+ 		 sbefifo->idx);
+ 
+ 	/* This bit of silicon doesn't offer any interrupts... */
+-	setup_timer(&sbefifo->poll_timer, sbefifo_poll_timer,
+-		    (unsigned long)sbefifo);
++	INIT_DELAYED_WORK(&sbefifo->work, sbefifo_worker);
+ 
+ 	sbefifo->mdev.minor = MISC_DYNAMIC_MINOR;
+ 	sbefifo->mdev.fops = &sbefifo_fops;
+@@ -982,7 +986,7 @@ static int sbefifo_remove(struct device *dev)
+ 
+ 	ida_simple_remove(&sbefifo_ida, sbefifo->idx);
+ 
+-	if (del_timer_sync(&sbefifo->poll_timer))
++	if (cancel_delayed_work_sync(&sbefifo->work))
+ 		sbefifo_put(sbefifo);
+ 
+ 	sbefifo_put(sbefifo);
+@@ -1010,11 +1014,17 @@ static int sbefifo_remove(struct device *dev)
+ 
+ static int sbefifo_init(void)
+ {
++	sbefifo_wq = create_singlethread_workqueue("sbefifo");
++	if (!sbefifo_wq)
++		return -ENOMEM;
++
+ 	return fsi_driver_register(&sbefifo_drv);
+ }
+ 
+ static void sbefifo_exit(void)
+ {
++	destroy_workqueue(sbefifo_wq);
++
+ 	fsi_driver_unregister(&sbefifo_drv);
+ 
+ 	ida_destroy(&sbefifo_ida);

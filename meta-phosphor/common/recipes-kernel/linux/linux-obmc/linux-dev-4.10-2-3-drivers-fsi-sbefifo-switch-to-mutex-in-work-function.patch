@@ -1,0 +1,173 @@
+From patchwork Fri Feb  2 22:11:46 2018
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [linux, dev-4.10,
+ 2/3] drivers: fsi: sbefifo: switch to mutex in work function
+X-Patchwork-Submitter: Eddie James <eajames@linux.vnet.ibm.com>
+X-Patchwork-Id: 868811
+Message-Id: <1517609507-20687-3-git-send-email-eajames@linux.vnet.ibm.com>
+To: openbmc@lists.ozlabs.org
+Cc: andrew@aj.id.au, Eddie James <eajames@linux.vnet.ibm.com>
+Date: Fri,  2 Feb 2018 16:11:46 -0600
+From: Eddie James <eajames@linux.vnet.ibm.com>
+List-Id: Development list for OpenBMC <openbmc.lists.ozlabs.org>
+
+Use a mutex instead of a spinlock to prevent locking up the bmc while
+waiting on FSI operations. This can then be used in conjunction with
+Jeremy's FSI spinlock fix.
+
+Signed-off-by: Eddie James <eajames@linux.vnet.ibm.com>
+---
+ drivers/fsi/fsi-sbefifo.c | 42 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 30 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/fsi/fsi-sbefifo.c b/drivers/fsi/fsi-sbefifo.c
+index 7b6842a..4d024ed 100644
+--- a/drivers/fsi/fsi-sbefifo.c
++++ b/drivers/fsi/fsi-sbefifo.c
+@@ -22,6 +22,7 @@
+ #include <linux/list.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+@@ -63,7 +64,8 @@ struct sbefifo {
+ 	wait_queue_head_t wait;
+ 	struct list_head xfrs;
+ 	struct kref kref;
+-	spinlock_t lock;
++	spinlock_t list_lock;		/* lock access to the xfrs list */
++	struct mutex sbefifo_lock;	/* lock access to the hardware */
+ 	char name[32];
+ 	int idx;
+ 	int rc;
+@@ -389,12 +391,16 @@ static void sbefifo_worker(struct work_struct *work)
+ 	int ret = 0;
+ 	u32 sts;
+ 	int i;
++	unsigned long flags;
+ 
+-	spin_lock(&sbefifo->lock);
++	spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 	xfr = list_first_entry_or_null(&sbefifo->xfrs, struct sbefifo_xfr,
+ 				       xfrs);
++	spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 	if (!xfr)
+-		goto out_unlock;
++		return;
++
++	mutex_lock(&sbefifo->sbefifo_lock);
+ 
+ again:
+ 	rbuf = xfr->rbuf;
+@@ -499,7 +505,11 @@ static void sbefifo_worker(struct work_struct *work)
+ 				goto out;
+ 
+ 			set_bit(SBEFIFO_XFR_COMPLETE, &xfr->flags);
++
++			spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 			list_del(&xfr->xfrs);
++			spin_unlock_irqrestore(&sbefifo->list_lock, flags);
++
+ 			if (unlikely(test_bit(SBEFIFO_XFR_CANCEL,
+ 					      &xfr->flags)))
+ 				kfree(xfr);
+@@ -512,14 +522,19 @@ static void sbefifo_worker(struct work_struct *work)
+ 		sbefifo->rc = ret;
+ 		dev_err(&sbefifo->fsi_dev->dev,
+ 			"Fatal bus access failure: %d\n", ret);
++
++		spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 		list_for_each_entry_safe(xfr, tmp, &sbefifo->xfrs, xfrs) {
+ 			list_del(&xfr->xfrs);
+ 			kfree(xfr);
+ 		}
+ 		INIT_LIST_HEAD(&sbefifo->xfrs);
+-
++		spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 	} else if (eot) {
++		spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 		xfr = sbefifo_next_xfr(sbefifo);
++		spin_unlock_irqrestore(&sbefifo->list_lock, flags);
++
+ 		if (xfr) {
+ 			wake_up_interruptible(&sbefifo->wait);
+ 			goto again;
+@@ -530,7 +545,7 @@ static void sbefifo_worker(struct work_struct *work)
+ 	wake_up_interruptible(&sbefifo->wait);
+ 
+ out_unlock:
+-	spin_unlock(&sbefifo->lock);
++	mutex_unlock(&sbefifo->sbefifo_lock);
+ }
+ 
+ static int sbefifo_open(struct inode *inode, struct file *file)
+@@ -686,6 +701,7 @@ static ssize_t sbefifo_write_common(struct sbefifo_client *client,
+ 	struct sbefifo_xfr *xfr;
+ 	ssize_t ret = 0;
+ 	size_t n;
++	unsigned long flags;
+ 
+ 	if ((len >> 2) << 2 != len)
+ 		return -EINVAL;
+@@ -696,23 +712,23 @@ static ssize_t sbefifo_write_common(struct sbefifo_client *client,
+ 	sbefifo_get_client(client);
+ 	n = sbefifo_buf_nbwriteable(&client->wbuf);
+ 
+-	spin_lock_irq(&sbefifo->lock);
++	spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 	xfr = sbefifo_next_xfr(sbefifo);	/* next xfr to be executed */
+ 
+ 	if ((client->f_flags & O_NONBLOCK) && xfr && n < len) {
+-		spin_unlock_irq(&sbefifo->lock);
++		spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 		ret = -EAGAIN;
+ 		goto out;
+ 	}
+ 
+ 	xfr = sbefifo_enq_xfr(client);		/* this xfr queued up */
+ 	if (IS_ERR(xfr)) {
+-		spin_unlock_irq(&sbefifo->lock);
++		spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 		ret = PTR_ERR(xfr);
+ 		goto out;
+ 	}
+ 
+-	spin_unlock_irq(&sbefifo->lock);
++	spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 
+ 	/*
+ 	 * Partial writes are not really allowed in that EOT is sent exactly
+@@ -923,7 +939,8 @@ static int sbefifo_probe(struct device *dev)
+ 		}
+ 	}
+ 
+-	spin_lock_init(&sbefifo->lock);
++	spin_lock_init(&sbefifo->list_lock);
++	mutex_init(&sbefifo->sbefifo_lock);
+ 	kref_init(&sbefifo->kref);
+ 	init_waitqueue_head(&sbefifo->wait);
+ 	INIT_LIST_HEAD(&sbefifo->xfrs);
+@@ -966,8 +983,9 @@ static int sbefifo_remove(struct device *dev)
+ {
+ 	struct sbefifo *sbefifo = dev_get_drvdata(dev);
+ 	struct sbefifo_xfr *xfr, *tmp;
++	unsigned long flags;
+ 
+-	spin_lock(&sbefifo->lock);
++	spin_lock_irqsave(&sbefifo->list_lock, flags);
+ 
+ 	WRITE_ONCE(sbefifo->rc, -ENODEV);
+ 	list_for_each_entry_safe(xfr, tmp, &sbefifo->xfrs, xfrs) {
+@@ -977,7 +995,7 @@ static int sbefifo_remove(struct device *dev)
+ 
+ 	INIT_LIST_HEAD(&sbefifo->xfrs);
+ 
+-	spin_unlock(&sbefifo->lock);
++	spin_unlock_irqrestore(&sbefifo->list_lock, flags);
+ 
+ 	wake_up_all(&sbefifo->wait);
+ 
