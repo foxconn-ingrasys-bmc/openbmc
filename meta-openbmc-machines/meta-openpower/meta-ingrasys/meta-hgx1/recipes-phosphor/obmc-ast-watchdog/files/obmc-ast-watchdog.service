@@ -1,0 +1,16 @@
+#**************************************************************
+#*                                                            *
+#*   Copyright (C) Microsoft Corporation. All rights reserved.*
+#*                                                            *
+#**************************************************************
+
+[Unit]
+Description=OpenBMC Hardware Watchdog
+
+[Service]
+ExecStartPre=/bin/mkdir -p /run/obmc
+ExecStart=@SBINDIR@/obmc-ast-watchdog
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
