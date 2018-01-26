@@ -14,7 +14,7 @@ TARGET_CPPFLAGS += "-std=c++11 -fpic"
 FOXCONN_BRANCH = "foxconn-hgx1"
 SRC_URI += "git://github.com/foxconn-ingrasys-bmc/phosphor-event;branch=${FOXCONN_BRANCH}"
 
-SRCREV = "7e31659bb952d1eae3abb2362a7e75c8702670bf"
+SRCREV = "059b35e1eabdd87ad02b4343692789386c134082"
 
 RDEPENDS_${PN} += "libsystemd"
 DEPENDS += "systemd"
