@@ -49,23 +49,9 @@
         Value: False
 3:
   /system/chassis/motherboard:
-    xyz.openbmc_project.Inventory.Decorator.Asset:
-      BuildDate:
-        IPMIFruProperty: Mfg Date
-        IPMIFruSection: Board
-      PartNumber:
-        IPMIFruProperty: Part Number
-        IPMIFruSection: Board
-      Manufacturer:
-        IPMIFruProperty: Manufacturer
-        IPMIFruSection: Board
-      SerialNumber:
-        IPMIFruProperty: Serial Number
-        IPMIFruSection: Board
-    xyz.openbmc_project.Inventory.Item:
-      PrettyName:
-        IPMIFruProperty: Name
-        IPMIFruSection: Board
+#define on 'xyz/openbmc_project/Inventory/FoxconnFruItem.interface.yaml'
+#with phosphor-dbus-interfaces.git
+    xyz.openbmc_project.Inventory.FoxconnFruItem:
   /system:
     xyz.openbmc_project.Inventory.Decorator.Asset:
       SerialNumber:
