@@ -3,7 +3,7 @@ Description=Phosphor OpenBMC event management daemon
 
 [Service]
 Restart=always
-ExecStart=/usr/sbin/obmc-phosphor-eventd -t 200
+ExecStart=/usr/sbin/obmc-phosphor-eventd -t 128
 
 [Install]
 WantedBy=multi-user.target

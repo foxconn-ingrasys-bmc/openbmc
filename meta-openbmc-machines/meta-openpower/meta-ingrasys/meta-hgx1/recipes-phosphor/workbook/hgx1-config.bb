@@ -3,6 +3,6 @@ DESCRIPTION = "Board wiring information for the hgx1 system."
 HOMEPAGE = "https://github.com/foxconn-ingrasys-bmc/skeleton"
 PR = "r1"
 
-SRCREV = "c3ceb90f540cb48099b9ad190ed01a8dd5b00e26"
+SRCREV = "ed94a7cb8ef5ae7013c2b23298a7f48acbdfb1e4"
 inherit config-in-skeleton
 inherit obmc-phosphor-license
