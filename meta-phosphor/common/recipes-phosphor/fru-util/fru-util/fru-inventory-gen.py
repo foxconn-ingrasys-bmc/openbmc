@@ -12,6 +12,7 @@ INVENTORY_MANAGER_OBJECT_PATH = '/xyz/openbmc_project/inventory'
 INVENTORY_MANAGER_DBUS_BUS_NAME = 'xyz.openbmc_project.Inventory.Manager'
 INVENTORY_MANAGER_DBUS_INTF_NAME = 'xyz.openbmc_project.Inventory.Manager'
 INVENTORY_OCS_FRU_COMMAND = 'ocs-fru -c %d -s %x -r'
+INVENTORY_OBJECT_PATH_ROOT = '/xyz/openbmc_project/inventory'
 
 g_fru_inventory_property_interface = {
     'xyz.openbmc_project.Inventory.FoxconnFruItem': {
@@ -45,7 +46,7 @@ g_fru_inventory_property_interface = {
 }
 
 def _add_inventory_motherboard(configs):
-    objpath = '/xyz/openbmc_project/inventory/system/chassis/motherboard'
+    objpath = INVENTORY_OBJECT_PATH_ROOT + '/system/chassis/motherboard'
     config = {
         'FRU_I2C_BUS': 0,
         'FRU_I2C_SLAVE': 0x50,
@@ -105,6 +106,11 @@ if __name__ == '__main__':
         property_config = parse_ocs_fru_data_mapping_inventory_property(ocs_fru_cmd_data)
         if len(property_config) == 0:
             continue
-        dbus_notify_parameters[objectpath] = property_config
+        #@dbus_notify_parameter_objectpath:
+        #    Parameter about object path for 'Notify' control with Inventory Manager would
+        # set default object path root as INVENTORY_OBJECT_PATH_ROOT. So, it is  needless for
+        # INVENTORY_OBJECT_PATH_ROOT of objpath.
+        dbus_notify_parameter_objectpath = objectpath.replace(INVENTORY_OBJECT_PATH_ROOT, '')
+        dbus_notify_parameters[dbus_notify_parameter_objectpath] = property_config
     inventory_manager_notify_control(dbus_notify_parameters)
     print "Fru-inventory-gen  Finish!!!"
