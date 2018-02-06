@@ -1,0 +1,12 @@
+[Unit]
+Description=FRU Inventory Generate
+Wants=xyz.openbmc_project.Inventory.Manager.service
+After=xyz.openbmc_project.Inventory.Manager.service
+
+[Service]
+Restart=no
+Type=oneshot
+ExecStart={sbindir}/fru-inventory-gen.py
+
+[Install]
+WantedBy={SYSTEMD_DEFAULT_TARGET}
