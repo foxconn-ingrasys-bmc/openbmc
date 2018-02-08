@@ -19,7 +19,7 @@ FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 FOXCONN_BRANCH="foxconn-g2"
 SRC_URI = "git://github.com/foxconn-bmc-ks/fru-util;branch=${FOXCONN_BRANCH}"
 SRC_URI += "file://fru-inventory-gen.py"
-SRCREV = "9c171002298689d29fcadd1b48794f25aa8ddacb"
+SRCREV = "de10d83258a3ddcdab779993cd6fb3f9208e85cb"
 S = "${WORKDIR}/git"
 SYSTEMD_SERVICE_${PN} += "fru-inventory-gen.service"
 
