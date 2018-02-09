@@ -7,4 +7,3 @@
 /etc/shadow
 /etc/gshadow
 /var/cache/obmc
-/var/lib/obmc
