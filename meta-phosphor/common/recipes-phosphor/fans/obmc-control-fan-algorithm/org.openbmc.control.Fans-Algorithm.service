@@ -1,5 +1,7 @@
 [Unit]
-Description=Phosphor Fan Control
+Description=Phosphor Fan Alogrithm Control
+Wants=xyz.openbmc_project.State.Chassis.service
+After=xyz.openbmc_project.State.Chassis.service
 
 [Service]
 Restart=always
