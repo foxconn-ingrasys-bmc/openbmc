@@ -3,8 +3,6 @@ DESCRIPTION = "Phosphor OpenBMC WriteFRU for  OpenPOWER based systems"
 HOMEPAGE = "https://github.com/openbmc/ipmi-fru-parser"
 PR = "r1"
 
-RRECOMMENDS_${PN} = "virtual/obmc-phosphor-host-ipmi-hw"
-
 inherit obmc-phosphor-license
 
 DEPENDS += " \
@@ -16,9 +14,10 @@ RDEPENDS_${PN} += "libsystemd"
 
 TARGET_CFLAGS += " -fpic -std=gnu++14"
 
-SRC_URI += "git://github.com/openbmc/ipmi-fru-parser"
+SRC_URI += "git://github.com/foxconn-ingrasys-bmc/ipmi-fru-parser"
 
 SRCREV = "a26ed7375261ebcfffa68cf478bcb8f2204c6c92"
+#SRCREV = "155c34fbb61071f5b51240c4a50b49391e0877c1"
 
 FILES_SOLIBSDEV += "${libdir}/host-ipmid/lib*${SOLIBSDEV}"
 FILES_${PN} += "${libdir}/host-ipmid/lib*${SOLIBS}"

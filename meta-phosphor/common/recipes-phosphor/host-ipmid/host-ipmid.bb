@@ -3,8 +3,6 @@ DESCRIPTION = "Phosphor OpenBMC IPMI router and plugin libraries"
 HOMEPAGE = "http://github.com/openbmc/phosphor-host-ipmid"
 PR = "r1"
 
-RRECOMMENDS_${PN} += "virtual/obmc-phosphor-host-ipmi-hw"
-
 RRECOMMENDS_${PN} += "${VIRTUAL-RUNTIME_obmc-phosphor-ipmi-parsers}"
 
 
