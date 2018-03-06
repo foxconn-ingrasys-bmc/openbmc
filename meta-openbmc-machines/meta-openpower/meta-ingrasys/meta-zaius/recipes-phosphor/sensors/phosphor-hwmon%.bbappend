@@ -10,6 +10,7 @@ ZAIUS_CHIPS = "i2c@1e78a000/i2c-bus@40/ucd90160@64 \
                 i2c@1e78a000/i2c-bus@380/hdd@72 \
                 i2c@1e78a000/i2c-bus@380/hdd@73 \
                 i2c@1e78a000/i2c-bus@380/hdd@74 \
+                i2c@1e78a000/i2c-bus@380/hdd_expander@5f \
                 "
 ZAIUS_ITEMSFMT = "ahb/apb/{0}.conf"
 
