@@ -11,10 +11,10 @@ inherit obmc-phosphor-c-daemon
 
 TARGET_CPPFLAGS += "-std=c++11 -fpic"
 
-FOXCONN_BRANCH = "foxconn-hgx1"
+FOXCONN_BRANCH = "foxconn-hgx1-mast"
 SRC_URI += "git://github.com/foxconn-ingrasys-bmc/phosphor-event;branch=${FOXCONN_BRANCH}"
 
-SRCREV = "059b35e1eabdd87ad02b4343692789386c134082"
+SRCREV = "4d85cbdb2b4296db649f5c510d116d6fbc37ecab"
 
 RDEPENDS_${PN} += "libsystemd"
 DEPENDS += "systemd"
