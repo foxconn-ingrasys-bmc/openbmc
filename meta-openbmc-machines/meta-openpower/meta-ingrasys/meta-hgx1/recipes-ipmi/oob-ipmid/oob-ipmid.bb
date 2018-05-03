@@ -7,7 +7,7 @@ BB_NO_NETWORK = "0"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
 
-SRC_URI = "git://github.com/danielweitw/oob-ipmid.git;protocol=https;"
+SRC_URI = "git://github.com/foxconn-ingrasys-bmc/oob-ipmid.git;protocol=https;"
 SRCREV = "${AUTOREV}"
 
 S = "${WORKDIR}/git"
