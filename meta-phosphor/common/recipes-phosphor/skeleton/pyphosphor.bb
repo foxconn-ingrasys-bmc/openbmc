@@ -10,6 +10,6 @@ inherit setuptools
 FOXCONN_BRANCH = "foxconn-hgx1"
 SRC_URI += "git://github.com/foxconn-ingrasys-bmc/pyphosphor;branch=${FOXCONN_BRANCH}"
 
-SRCREV = "34f101dc7f432cc8879fa0033a824efc6f94c375"
+SRCREV = "030141a38e99022a388c22369788123924059adb"
 
 S = "${WORKDIR}/git"
