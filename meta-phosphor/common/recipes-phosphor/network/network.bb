@@ -11,11 +11,10 @@ SYSTEMD_SERVICE_${PN} += "network.service network-update-dns.service"
 
 RDEPENDS_${PN} += "python-dbus python-pygobject"
 
-#SRC_URI += "git://github.com/foxconn-ingrasys-bmc/phosphor-networkd"
 FOXCONN_BRANCH = "foxconn-hgx1"
 SRC_URI += "git://github.com/foxconn-ingrasys-bmc/phosphor-networkd;branch=${FOXCONN_BRANCH}"
 
-SRCREV = "9de42e016b27a4497a1c6f6e71c34ecd052f16a1"
+SRCREV = "f46ce6a37703571c69ba7be70d111bbd3c5ffeac"
 
 S = "${WORKDIR}/git"
 
